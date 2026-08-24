@@ -13,10 +13,10 @@ library(snpStats)
 # -------------------------------
 # 1. Percorsi file
 # -------------------------------
-pheno_file <- "Input/Pheno_raw.xlsx"
-bed_file <- "Input/SNPs_final_2022.bed"
-bim_file <- "Input/SNPs_final_2022.bim"
-fam_file <- "Input/SNPs_final_2022.fam"
+pheno_file <- "data/raw/phenotype/Pheno_raw.xlsx"
+bed_file <- "data/raw/genotype/SNPs_final_2022.bed"
+bim_file <- "data/raw/genotype/SNPs_final_2022.bim"
+fam_file <- "data/raw/genotype/SNPs_final_2022.fam"
 
 # -------------------------------
 # 2. Caricamento dati/files
@@ -102,13 +102,17 @@ mapping_df <- data.frame(
   stringsAsFactors = FALSE
 )
 
-dir.create("Output", showWarnings = FALSE)
-write.csv(mapping_df, "Output/genotype_id_mapping.csv", row.names = FALSE)
+outdir <- "02_harvest_date/01_data_audit/output"
+write.csv(
+  mapping_df,
+  file.path(outdir, "genotype_id_mapping.csv"),
+  row.names = FALSE
+)
 
 # -------------------------------
 # 10. Report testuale
 # -------------------------------
-sink("Output/id_mapping_report.txt")
+sink(file.path(outdir, "id_mapping_report.txt"))
 
 cat("=== STEP A2: ID MAPPING REPORT ===\n\n")
 
