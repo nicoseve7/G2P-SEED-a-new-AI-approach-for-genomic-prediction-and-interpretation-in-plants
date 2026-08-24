@@ -98,7 +98,7 @@ cat("\n")
 # -------------------------------
 # 9. Salvataggio output
 # -------------------------------
-outdir <- "0/output"
+outdir <- "02_harvest_date/01_common_genomic_preprocessing/output"
 dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
 
 # salviamo in formato RData per non creare csv giganteschi inutili
@@ -139,6 +139,6 @@ sink()
 # 10. Stampa finale
 # -------------------------------
 cat("File salvati:\n")
-cat("- Output/SNP_matrix_modeling_var_gt0.RData\n")
-cat("- Output/SNP_info_modeling_var_gt0.csv\n")
-cat("- Output/SNP_matrix_modeling_report.txt\n")
+cat("- ", file.path(outdir, "Output/SNP_matrix_modeling_var_gt0.RData"), "\n")
+cat("- ", file.path(outdir, "SNP_info_modeling_var_gt0.csv"), "\n")
+cat("- ", file.path(outdir, "SNP_matrix_modeling_report.txt"), "\n")
