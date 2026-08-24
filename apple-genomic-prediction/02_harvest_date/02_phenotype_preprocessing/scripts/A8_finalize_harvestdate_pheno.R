@@ -13,8 +13,13 @@ library(dplyr)
 # -------------------------------
 # 1. Percorsi file
 # -------------------------------
-input_file <- "Output/harvestdate_processed_no_outliers.csv"
+outdir <- "02_harvest_date/02_phenotype_preprocessing/output"
+dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
 
+input_file <- file.path(
+  outdir,
+  "harvestdate_processed_no_outliers.csv"
+)
 # -------------------------------
 # 2. Caricamento dati
 # -------------------------------
@@ -43,11 +48,12 @@ cat("Numero environment unici:", n_env, "\n\n")
 # -------------------------------
 # 5. Salvataggio output finale
 # -------------------------------
-dir.create("Output", showWarnings = FALSE)
+write_csv(
+  pheno_final,
+  file.path(outdir, "Harvest_date_processed_final.csv")
+)
 
-write_csv(pheno_final, "Output/Harvest_date_processed_final.csv")
-
-sink("Output/Harvest_date_processed_final_report.txt")
+sink(file.path(outdir, "Harvest_date_processed_final_report.txt"))
 
 cat("=== STEP A8: FINAL HARVEST_DATE PHENO REPORT ===\n\n")
 cat("Numero righe finali:", n_rows, "\n")
@@ -64,5 +70,5 @@ sink()
 # 6. Stampa finale
 # -------------------------------
 cat("File salvati:\n")
-cat("- Output/Harvest_date_processed_final.csv\n")
-cat("- Output/Harvest_date_processed_final_report.txt\n")
+cat("- ", file.path(outdir, "Harvest_date_processed_final.csv"), "\n")
+cat("- ", file.path(outdir, "Harvest_date_processed_final_report.txt"), "\n")
