@@ -14,9 +14,9 @@ library(dplyr)
 # -------------------------------
 # 1. Percorsi file
 # -------------------------------
-bed_file <- "01_common_genomic_preprocessing/input/SNPs_final_2022.bed"
-bim_file <- "01_common_genomic_preprocessing/input/SNPs_final_2022.bim"
-fam_file <- "01_common_genomic_preprocessing/input/SNPs_final_2022.fam"
+bed_file <- "data/raw/genotype/SNPs_final_2022.bed"
+bim_file <- "data/raw/genotype/SNPs_final_2022.bim"
+fam_file <- "data/raw/genotype/SNPs_final_2022.fam"
 
 # -------------------------------
 # 2. Caricamento genomica
@@ -98,7 +98,7 @@ cat("\n")
 # -------------------------------
 # 9. Salvataggio output
 # -------------------------------
-outdir <- "01_common_genomic_preprocessing/output"
+outdir <- "0/output"
 dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
 
 # salviamo in formato RData per non creare csv giganteschi inutili
