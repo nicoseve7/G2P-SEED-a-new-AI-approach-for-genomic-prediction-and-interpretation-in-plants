@@ -14,8 +14,13 @@ library(lme4)
 # -------------------------------
 # 1. Percorso file
 # -------------------------------
-input_file <- "Output/harvestdate_adjusted_values_trees.csv"
+outdir <- "02_harvest_date/02_phenotype_preprocessing/output"
+dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
 
+input_file <- file.path(
+  outdir,
+  "harvestdate_adjusted_values_trees.csv"
+)
 # -------------------------------
 # 2. Caricamento dati
 # -------------------------------
@@ -89,12 +94,17 @@ vc_wide <- data.frame(
 # -------------------------------
 # 8. Salvataggio output
 # -------------------------------
-dir.create("Output", showWarnings = FALSE)
+write_csv(
+  vc_out,
+  file.path(outdir, "harvestdate_phenotypic_variance_components_long.csv")
+)
 
-write_csv(vc_out, "Output/harvestdate_phenotypic_variance_components_long.csv")
-write_csv(vc_wide, "Output/harvestdate_phenotypic_variance_components_wide.csv")
+write_csv(
+  vc_wide,
+  file.path(outdir, "harvestdate_phenotypic_variance_components_wide.csv")
+)
 
-sink("Output/harvestdate_phenotypic_model_report.txt")
+sink(file.path(outdir, "harvestdate_phenotypic_model_report.txt"))
 
 cat("=== STEP A7: HARVEST_DATE PHENOTYPIC MODEL REPORT ===\n\n")
 cat("Numero righe usate:", nrow(trees), "\n")
@@ -115,6 +125,6 @@ sink()
 # 9. Stampa finale
 # -------------------------------
 cat("File salvati:\n")
-cat("- Output/harvestdate_phenotypic_variance_components_long.csv\n")
-cat("- Output/harvestdate_phenotypic_variance_components_wide.csv\n")
-cat("- Output/harvestdate_phenotypic_model_report.txt\n")
+cat("- ", file.path(outdir, "harvestdate_phenotypic_variance_components_long.csv"), "\n")
+cat("- ", file.path(outdir, "harvestdate_phenotypic_variance_components_wide.csv"), "\n")
+cat("- ", file.path(outdir, "harvestdate_phenotypic_model_report.txt"), "\n")
