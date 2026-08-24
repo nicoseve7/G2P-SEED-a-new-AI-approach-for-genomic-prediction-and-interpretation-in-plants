@@ -10,13 +10,13 @@ cat("=== STEP A1: DATA AUDIT ===\n\n") # stampa nel terminale la scritta
 # -------------------------------
 # 1. Pacchetti
 # -------------------------------
-# required_packages <- c("readxl", "snpStats") # crea una lista di pacchetti che ci servono, readx1 serve per leggere file Excel .xlsx, snpStats serve per leggere i file PLINK
+required_packages <- c("readxl", "snpStats") # crea una lista di pacchetti che ci servono, readx1 serve per leggere file Excel .xlsx, snpStats serve per leggere i file PLINK
 
-# for (pkg in required_packages) {
-#   if (!requireNamespace(pkg, quietly = TRUE)) {
-#     install.packages(pkg, repos = "https://cloud.r-project.org")
-#   }
-# } # controlla ogni pacchetto se è stato installato, se non lo è lo installa
+for (pkg in required_packages) {
+  if (!requireNamespace(pkg, quietly = TRUE)) {
+    install.packages(pkg, repos = "https://cloud.r-project.org")
+  }
+} # controlla ogni pacchetto se è stato installato, se non lo è lo installa
 
 library(readxl) # carica i pacchetti in memoria, così possiamo usare le loro funzioni
 library(snpStats) # # carica i pacchetti in memoria, così possiamo usare le loro funzioni
@@ -24,13 +24,13 @@ library(snpStats) # # carica i pacchetti in memoria, così possiamo usare le lor
 # -------------------------------
 # 2. Percorsi file
 # -------------------------------
-pheno_file <- "Input/Pheno_raw.xlsx"
-weather_file <- "Input/Weather_raw.xlsx"
-soil_file <- "Input/Soil_raw.xlsx"
+pheno_file <- "data/raw/phenotype/Pheno_raw.xlsx"
+weather_file <- "data/raw/environment/Weather_raw.xlsx"
+soil_file <- "data/raw/environment/Soil_raw.xlsx"
 
-bed_file <- "Input/SNPs_final_2022.bed"
-bim_file <- "Input/SNPs_final_2022.bim"
-fam_file <- "Input/SNPs_final_2022.fam"
+bed_file <- "data/raw/genotype/SNPs_final_2022.bed"
+bim_file <- "data/raw/genotype/SNPs_final_2022.bim"
+fam_file <- "data/raw/genotype/SNPs_final_2022.fam"
 
 # -------------------------------
 # 3. Controllo esistenza file: per ogni file controlla se esiste davvero
@@ -149,9 +149,11 @@ cat("\n")
 # -------------------------------
 # 10. Salvataggio report semplice
 # -------------------------------
-#dir.create("Output", showWarnings = FALSE)
+outdir <- "02_harvest_date/01_data_audit/output"
+dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
 
-sink("Output/audit_report.txt") # Da questo punto in poi, invece di stampare nel terminale, R scrive tutto in un file di testo. Così avrai un report salvato e non perdi le informazioni.
+sink(file.path(outdir, "audit_report.txt"))
+
 cat("=== DATA AUDIT REPORT ===\n\n")
 
 cat("DIMENSIONI DATASET\n")
