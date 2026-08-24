@@ -13,8 +13,8 @@ library(dplyr)
 # -------------------------------
 # 1. Percorsi file
 # -------------------------------
-master_file <- "Output/master_alignment_table.csv"
-pcs_file <- "Output/genomic_PCs_20_paper_style.csv"
+master_file <- "02_harvest_date/02_input_preparation/output/master_alignment_table.csv"
+pcs_file <- "01_common_genomic_preprocessing/output/genomic_PCs_20_paper_style.csv"
 
 # -------------------------------
 # 2. Caricamento dati
@@ -70,11 +70,17 @@ cat("\n")
 # -------------------------------
 # 6. Salvataggio output
 # -------------------------------
-dir.create("Output", showWarnings = FALSE)
+outdir <- "02_harvest_date/02_input_preparation/output"
+dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
 
-write_csv(master_pcs_df, "Output/master_alignment_table_with_PCs.csv")
+write_csv(
+  master_pcs_df,
+  file.path(outdir, "master_alignment_table_with_PCs.csv")
+)
 
-sink("Output/master_alignment_table_with_PCs_report.txt")
+sink(
+  file.path(outdir, "master_alignment_table_with_PCs_report.txt")
+)
 
 cat("=== STEP C4: MASTER TABLE WITH PCs REPORT ===\n\n")
 cat("Numero righe finali:", nrow(master_pcs_df), "\n")
