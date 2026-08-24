@@ -59,11 +59,19 @@ day_to_date <- function(day_of_year, year) {
 # ----------------------------------------------------------
 # 1. File input
 # ----------------------------------------------------------
-pheno_raw_file <- "Input/Pheno_raw.xlsx"
-bed_file       <- "Input/SNPs_final_2022.bed"
-bim_file       <- "Input/SNPs_final_2022.bim"
-fam_file       <- "Input/SNPs_final_2022.fam"
-harvest_file   <- "Output/Harvest_date_processed_final.csv"
+pheno_raw_file <- "data/raw/phenotype/Pheno_raw.xlsx"
+
+bed_file <- "data/raw/genotype/SNPs_final_2022.bed"
+bim_file <- "data/raw/genotype/SNPs_final_2022.bim"
+fam_file <- "data/raw/genotype/SNPs_final_2022.fam"
+
+harvest_file <- paste0(
+  "02_harvest_date/02_phenotype_preprocessing/output/",
+  "Harvest_date_processed_final.csv"
+)
+
+outdir <- "02_harvest_date/03_environment_preprocessing/output"
+dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
 
 # ----------------------------------------------------------
 # 2. Caricamento dati
@@ -78,8 +86,6 @@ cat("Caricamento Harvest_date finale...\n")
 harvest_final <- read_csv(harvest_file, show_col_types = FALSE)
 
 cat("Caricamento completato.\n\n")
-
-dir.create("Output", showWarnings = FALSE)
 
 # ----------------------------------------------------------
 # 3. Preparazione Flowering_begin raw
@@ -149,7 +155,10 @@ for (env in env_list) {
 
 h2_results$low_H2_flag <- ifelse(!is.na(h2_results$H2) & h2_results$H2 < 0.1, TRUE, FALSE)
 
-write_csv(h2_results, "Output/Flowering_begin_heritability_by_environment.csv")
+write_csv(
+  h2_results,
+  file.path(outdir, "Flowering_begin_heritability_by_environment.csv")
+)
 
 cat("Environment Flowering_begin con H2 < 0.1:\n")
 print(h2_results$Envir[h2_results$low_H2_flag %in% TRUE])
@@ -242,8 +251,15 @@ for (env in env_list_spats) {
   trees_all <- bind_rows(trees_all, trees_env)
 }
 
-write_csv(means_all, "Output/Flowering_begin_adjusted_values_genotype.csv")
-write_csv(trees_all, "Output/Flowering_begin_adjusted_values_trees.csv")
+write_csv(
+  means_all,
+  file.path(outdir, "Flowering_begin_adjusted_values_genotype.csv")
+)
+
+write_csv(
+  trees_all,
+  file.path(outdir, "Flowering_begin_adjusted_values_trees.csv")
+)
 
 # ----------------------------------------------------------
 # 6. Outlier detection paper-inspired su genotype-level
@@ -272,8 +288,15 @@ fb_proc <- fb_proc %>%
   select(Genotype, Envir, Value) %>%
   rename(Flowering_begin = Value)
 
-write_csv(outl, "Output/Flowering_begin_outliers_paper_method.csv")
-write_csv(fb_proc, "Output/Flowering_begin_processed_final.csv")
+write_csv(
+  outl,
+  file.path(outdir, "Flowering_begin_outliers_paper_method.csv")
+)
+
+write_csv(
+  fb_proc,
+  file.path(outdir, "Flowering_begin_processed_final.csv")
+)
 
 # ----------------------------------------------------------
 # 7. Definizione periodi P1/P2
@@ -314,12 +337,14 @@ dates$P1_end   <- dates$FDdate
 dates$P2_start <- dates$FDdate + 1
 dates$P2_end   <- dates$HDdate
 
-write_csv(dates, "Output/environment_periods_P1_P2.csv")
-
+write_csv(
+  dates,
+  file.path(outdir, "environment_periods_P1_P2.csv")
+)
 # ----------------------------------------------------------
 # 8. Report finale
 # ----------------------------------------------------------
-sink("Output/floweringbegin_and_periods_report.txt")
+sink(file.path(outdir, "floweringbegin_and_periods_report.txt"))
 
 cat("=== STEP B3: FLOWERING_BEGIN + PERIODS REPORT ===\n\n")
 
@@ -338,10 +363,10 @@ cat("\n")
 sink()
 
 cat("File salvati:\n")
-cat("- Output/Flowering_begin_heritability_by_environment.csv\n")
-cat("- Output/Flowering_begin_adjusted_values_genotype.csv\n")
-cat("- Output/Flowering_begin_adjusted_values_trees.csv\n")
-cat("- Output/Flowering_begin_outliers_paper_method.csv\n")
-cat("- Output/Flowering_begin_processed_final.csv\n")
-cat("- Output/environment_periods_P1_P2.csv\n")
-cat("- Output/floweringbegin_and_periods_report.txt\n")
+cat("- ", file.path(outdir, "Flowering_begin_heritability_by_environment.csv"), "\n")
+cat("- ", file.path(outdir, "Flowering_begin_adjusted_values_genotype.csv"), "\n")
+cat("- ", file.path(outdir, "Flowering_begin_adjusted_values_trees.csv"), "\n")
+cat("- ", file.path(outdir, "Flowering_begin_outliers_paper_method.csv"), "\n")
+cat("- ", file.path(outdir, "Flowering_begin_processed_final.csv"), "\n")
+cat("- ", file.path(outdir, "environment_periods_P1_P2.csv"), "\n")
+cat("- ", file.path(outdir, "floweringbegin_and_periods_report.txt"), "\n")
