@@ -14,12 +14,14 @@ library(dplyr)
 # -------------------------------
 # 1. Percorsi file
 # -------------------------------
-bed_file <- "Input/SNPs_final_2022.bed"
-bim_file <- "Input/SNPs_final_2022.bim"
-fam_file <- "Input/SNPs_final_2022.fam"
+bed_file <- "01_common_genomic_preprocessing/input/SNPs_final_2022.bed"
+bim_file <- "01_common_genomic_preprocessing/input/SNPs_final_2022.bim"
+fam_file <- "01_common_genomic_preprocessing/input/SNPs_final_2022.fam"
 
-pheno_file <- "Output/Harvest_date_processed_final.csv"
+pheno_file <- "02_harvest_date/01_phenotype_preprocessing/output/Harvest_date_processed_final.csv"
 
+outdir <- "02_harvest_date/02_input_preparation/output"
+dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
 # -------------------------------
 # 2. Controllo esistenza file
 # -------------------------------
@@ -136,9 +138,7 @@ cat("Max n_envir per genotipo:", max(pheno_counts$n_envir), "\n\n")
 # -------------------------------
 # 9. Salvataggio report
 # -------------------------------
-dir.create("Output", showWarnings = FALSE)
-
-sink("Output/genomic_audit_for_modeling_report.txt")
+sink(file.path(outdir, "genomic_audit_for_modeling_report.txt"))
 
 cat("=== STEP C1: GENOMIC AUDIT FOR MODELING REPORT ===\n\n")
 
@@ -193,4 +193,4 @@ sink()
 # 10. Stampa finale
 # -------------------------------
 cat("File salvato:\n")
-cat("- Output/genomic_audit_for_modeling_report.txt\n")
+cat("- ", file.path(outdir, "genomic_audit_for_modeling_report.txt"), "\n")
