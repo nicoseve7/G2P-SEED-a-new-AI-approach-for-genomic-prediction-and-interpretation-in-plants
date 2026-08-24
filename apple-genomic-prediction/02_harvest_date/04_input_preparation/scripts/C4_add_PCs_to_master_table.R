@@ -13,8 +13,18 @@ library(dplyr)
 # -------------------------------
 # 1. Percorsi file
 # -------------------------------
-master_file <- "02_harvest_date/02_input_preparation/output/master_alignment_table.csv"
-pcs_file <- "01_common_genomic_preprocessing/output/genomic_PCs_20_paper_style.csv"
+master_file <- paste0(
+  "02_harvest_date/04_input_preparation/output/",
+  "master_alignment_table.csv"
+)
+
+pcs_file <- paste0(
+  "01_common_genomic_preprocessing/output/",
+  "genomic_PCs_20_paper_style.csv"
+)
+
+outdir <- "02_harvest_date/04_input_preparation/output"
+dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
 
 # -------------------------------
 # 2. Caricamento dati
@@ -70,9 +80,6 @@ cat("\n")
 # -------------------------------
 # 6. Salvataggio output
 # -------------------------------
-outdir <- "02_harvest_date/02_input_preparation/output"
-dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
-
 write_csv(
   master_pcs_df,
   file.path(outdir, "master_alignment_table_with_PCs.csv")
@@ -102,5 +109,5 @@ sink()
 # 7. Stampa finale
 # -------------------------------
 cat("File salvati:\n")
-cat("- Output/master_alignment_table_with_PCs.csv\n")
-cat("- Output/master_alignment_table_with_PCs_report.txt\n")
+cat("- ", file.path(outdir, "master_alignment_table_with_PCs.csv"), "\n")
+cat("- ", file.path(outdir, "master_alignment_table_with_PCs_report.txt"), "\n")
