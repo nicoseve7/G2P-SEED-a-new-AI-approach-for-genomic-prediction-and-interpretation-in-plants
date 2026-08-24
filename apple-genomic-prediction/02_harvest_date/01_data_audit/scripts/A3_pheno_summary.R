@@ -13,8 +13,13 @@ library(dplyr)
 # -------------------------------
 # 1. Percorso file
 # -------------------------------
-pheno_file <- "Input/Pheno_raw.xlsx" # carico il file fenotipico
+# -------------------------------
+# 1. Percorso file
+# -------------------------------
+pheno_file <- "data/raw/phenotype/Pheno_raw.xlsx"
 
+outdir <- "02_harvest_date/01_data_audit/output"
+dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
 # -------------------------------
 # 2. Caricamento dati
 # -------------------------------
@@ -100,15 +105,21 @@ cat("Riepilogo per trait x environment completato.\n\n")
 # -------------------------------
 # 6. Salvataggio output
 # -------------------------------
-dir.create("Output", showWarnings = FALSE)
+write.csv(
+  summary_global,
+  file.path(outdir, "pheno_summary_global.csv"),
+  row.names = FALSE
+)
 
-write.csv(summary_global, "Output/pheno_summary_global.csv", row.names = FALSE)
-write.csv(summary_by_env, "Output/pheno_summary_by_environment.csv", row.names = FALSE)
-
+write.csv(
+  summary_by_env,
+  file.path(outdir, "pheno_summary_by_environment.csv"),
+  row.names = FALSE
+)
 # -------------------------------
 # 7. Report testuale
 # -------------------------------
-sink("Output/pheno_summary_report.txt")
+sink(file.path(outdir, "pheno_summary_report.txt"))
 
 cat("=== STEP A3: PHENOTYPE SUMMARY REPORT ===\n\n")
 
@@ -126,6 +137,6 @@ sink()
 # 8. Stampa finale
 # -------------------------------
 cat("File salvati:\n")
-cat("- Output/pheno_summary_global.csv\n")
-cat("- Output/pheno_summary_by_environment.csv\n")
-cat("- Output/pheno_summary_report.txt\n")
+cat("- ", file.path(outdir, "pheno_summary_global.csv"), "\n")
+cat("- ", file.path(outdir, "pheno_summary_by_environment.csv"), "\n")
+cat("- ", file.path(outdir, "pheno_summary_report.txt"), "\n")
