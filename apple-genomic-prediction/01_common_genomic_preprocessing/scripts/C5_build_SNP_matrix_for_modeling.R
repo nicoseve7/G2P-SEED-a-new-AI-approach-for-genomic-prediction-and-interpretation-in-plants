@@ -139,6 +139,6 @@ sink()
 # 10. Stampa finale
 # -------------------------------
 cat("File salvati:\n")
-cat("- ", file.path(outdir, "Output/SNP_matrix_modeling_var_gt0.RData"), "\n")
+cat("- ", file.path(outdir, "SNP_matrix_modeling_var_gt0.RData"), "\n")
 cat("- ", file.path(outdir, "SNP_info_modeling_var_gt0.csv"), "\n")
 cat("- ", file.path(outdir, "SNP_matrix_modeling_report.txt"), "\n")
