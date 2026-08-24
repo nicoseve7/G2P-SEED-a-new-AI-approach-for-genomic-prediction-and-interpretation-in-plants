@@ -14,12 +14,12 @@ library(snpStats)
 # -------------------------------
 # 1. Percorsi file
 # -------------------------------
-pheno_file <- "Output/Harvest_date_processed_final.csv"
-W_file <- "Output/W_environment_paper_style.csv"
+pheno_file <- "02_harvest_date/01_phenotype_preprocessing/output/Harvest_date_processed_final.csv"
+W_file <- "02_harvest_date/02_input_preparation/input/W_environment_paper_style.csv"
 
-bed_file <- "Input/SNPs_final_2022.bed"
-bim_file <- "Input/SNPs_final_2022.bim"
-fam_file <- "Input/SNPs_final_2022.fam"
+bed_file <- "01_common_genomic_preprocessing/input/SNPs_final_2022.bed"
+bim_file <- "01_common_genomic_preprocessing/input/SNPs_final_2022.bim"
+fam_file <- "01_common_genomic_preprocessing/input/SNPs_final_2022.fam"
 
 # -------------------------------
 # 2. Caricamento dati
@@ -91,11 +91,17 @@ master_df <- master_df %>%
 # -------------------------------
 # 10. Salvataggio output
 # -------------------------------
-dir.create("Output", showWarnings = FALSE)
+outdir <- "02_harvest_date/02_input_preparation/output"
+dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
 
-write_csv(master_df, "Output/master_alignment_table.csv")
+write_csv(
+  master_df,
+  file.path(outdir, "master_alignment_table.csv")
+)
 
-sink("Output/master_alignment_table_report.txt")
+sink(
+  file.path(outdir, "master_alignment_table_report.txt")
+)
 
 cat("=== STEP C2: MASTER ALIGNMENT TABLE REPORT ===\n\n")
 cat("Numero righe master:", nrow(master_df), "\n")
