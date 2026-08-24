@@ -13,8 +13,13 @@ library(dplyr)
 # -------------------------------
 # 1. Percorso file
 # -------------------------------
-input_file <- "Output/W_environment_full.csv"
+outdir <- "02_harvest_date/03_environment_preprocessing/output"
+dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
 
+input_file <- file.path(
+  outdir,
+  "W_environment_full.csv"
+)
 # -------------------------------
 # 2. Caricamento dati
 # -------------------------------
@@ -76,12 +81,17 @@ W_paper_matrix <- as.matrix(W_paper_matrix)
 # -------------------------------
 # 6. Salvataggio output
 # -------------------------------
-dir.create("Output", showWarnings = FALSE)
+write_csv(
+  W_paper,
+  file.path(outdir, "W_environment_paper_style.csv")
+)
 
-write_csv(W_paper, "Output/W_environment_paper_style.csv")
-save(W_paper_matrix, file = "Output/W_environment_paper_style.RData")
+save(
+  W_paper_matrix,
+  file = file.path(outdir, "W_environment_paper_style.RData")
+)
 
-sink("Output/W_environment_paper_style_report.txt")
+sink(file.path(outdir, "W_environment_paper_style_report.txt"))
 
 cat("=== STEP B7: W PAPER STYLE REPORT ===\n\n")
 cat("Numero righe W full:", nrow(W_full), "\n")
@@ -106,6 +116,6 @@ sink()
 # 7. Stampa finale
 # -------------------------------
 cat("File salvati:\n")
-cat("- Output/W_environment_paper_style.csv\n")
-cat("- Output/W_environment_paper_style.RData\n")
-cat("- Output/W_environment_paper_style_report.txt\n")
+cat("- ", file.path(outdir, "W_environment_paper_style.csv"), "\n")
+cat("- ", file.path(outdir, "W_environment_paper_style.RData"), "\n")
+cat("- ", file.path(outdir, "W_environment_paper_style_report.txt"), "\n")
