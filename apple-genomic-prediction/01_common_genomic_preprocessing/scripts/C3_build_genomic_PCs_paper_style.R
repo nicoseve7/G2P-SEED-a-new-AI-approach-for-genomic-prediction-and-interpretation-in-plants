@@ -16,11 +16,11 @@ library(dplyr)
 # -------------------------------
 # 1. Percorsi file
 # -------------------------------
-bed_file <- "01_common_genomic_preprocessing/input/SNPs_final_2022.bed"
-bim_file <- "01_common_genomic_preprocessing/input/SNPs_final_2022.bim"
-fam_file <- "01_common_genomic_preprocessing/input/SNPs_final_2022.fam"
+bed_file <- "data/raw/genotype/SNPs_final_2022.bed"
+bim_file <- "data/raw/genotype/SNPs_final_2022.bim"
+fam_file <- "data/raw/genotype/SNPs_final_2022.fam"
 
-outdir <- "01_common_genomic_preprocessing/output"
+outdir <- "02_harvest_date/01_common_genomic_preprocessing/output"
 dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
 
 gds_file <- file.path(outdir, "SNPs_final_2022.gds")
@@ -190,7 +190,7 @@ seqClose(gds)
 # 13. Fine
 # -------------------------------
 cat("File salvati:\n")
-cat("- Output/SNPs_final_2022.gds\n")
-cat("- Output/genomic_PCs_20_paper_style.csv\n")
-cat("- Output/genomic_PCs_variance_explained_paper_style.csv\n")
-cat("- Output/genomic_PCs_paper_style_report.txt\n")
+cat("- ", file.path(outdir, "SNPs_final_2022.gds"), "\n")
+cat("- ", file.path(outdir, "genomic_PCs_20_paper_style.csv"), "\n")
+cat("- ", file.path(outdir, "genomic_PCs_variance_explained_paper_style.csv"), "\n")
+cat("- ", file.path(outdir, "genomic_PCs_paper_style_report.txt"), "\n")
