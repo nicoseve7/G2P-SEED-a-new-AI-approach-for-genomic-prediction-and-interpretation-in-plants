@@ -65,8 +65,13 @@ outliers <- function(mydata, mytrait, mylm) {
 # -------------------------------
 # 1. Percorsi file
 # -------------------------------
-input_file <- "Output/harvestdate_adjusted_values_genotype.csv"
+outdir <- "02_harvest_date/02_phenotype_preprocessing/output"
+dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
 
+input_file <- file.path(
+  outdir,
+  "harvestdate_adjusted_values_genotype.csv"
+)
 # -------------------------------
 # 2. Caricamento dati
 # -------------------------------
@@ -126,12 +131,17 @@ pheno_no_outliers$id_row <- NULL
 # -------------------------------
 # 9. Salvataggio output
 # -------------------------------
-dir.create("Output", showWarnings = FALSE)
+write_csv(
+  outl,
+  file.path(outdir, "harvestdate_outliers_paper_method.csv")
+)
 
-write_csv(outl, "Output/harvestdate_outliers_paper_method.csv")
-write_csv(pheno_no_outliers, "Output/harvestdate_processed_no_outliers.csv")
+write_csv(
+  pheno_no_outliers,
+  file.path(outdir, "harvestdate_processed_no_outliers.csv")
+)
 
-sink("Output/harvestdate_outlier_report_paper_method.txt")
+sink(file.path(outdir, "harvestdate_outlier_report_paper_method.txt"))
 
 cat("=== STEP A6: HARVEST_DATE OUTLIER REPORT (PAPER METHOD) ===\n\n")
 cat("Numero osservazioni iniziali:", nrow(pheno_adj), "\n")
@@ -148,6 +158,6 @@ sink()
 # 10. Stampa finale
 # -------------------------------
 cat("File salvati:\n")
-cat("- Output/harvestdate_outliers_paper_method.csv\n")
-cat("- Output/harvestdate_processed_no_outliers.csv\n")
-cat("- Output/harvestdate_outlier_report_paper_method.txt\n")
+cat("- ", file.path(outdir, "harvestdate_outliers_paper_method.csv"), "\n")
+cat("- ", file.path(outdir, "harvestdate_processed_no_outliers.csv"), "\n")
+cat("- ", file.path(outdir, "harvestdate_outlier_report_paper_method.txt"), "\n")
