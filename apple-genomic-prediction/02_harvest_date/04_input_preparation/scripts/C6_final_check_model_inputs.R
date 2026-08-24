@@ -13,11 +13,33 @@ library(dplyr)
 # -------------------------------
 # 1. Percorsi file
 # -------------------------------
-master_pcs_file <- "02_harvest_date/02_input_preparation/output/master_alignment_table_with_PCs.csv"
-pcs_file <- "01_common_genomic_preprocessing/output/genomic_PCs_20_paper_style.csv"
-pve_file <- "01_common_genomic_preprocessing/output/genomic_PCs_variance_explained_paper_style.csv"
-snp_info_file <- "01_common_genomic_preprocessing/output/SNP_info_modeling_var_gt0.csv"
-snp_matrix_file <- "01_common_genomic_preprocessing/output/SNP_matrix_modeling_var_gt0.RData"
+master_pcs_file <- paste0(
+  "02_harvest_date/04_input_preparation/output/",
+  "master_alignment_table_with_PCs.csv"
+)
+
+pcs_file <- paste0(
+  "01_common_genomic_preprocessing/output/",
+  "genomic_PCs_20_paper_style.csv"
+)
+
+pve_file <- paste0(
+  "01_common_genomic_preprocessing/output/",
+  "genomic_PCs_variance_explained_paper_style.csv"
+)
+
+snp_info_file <- paste0(
+  "01_common_genomic_preprocessing/output/",
+  "SNP_info_modeling_var_gt0.csv"
+)
+
+snp_matrix_file <- paste0(
+  "01_common_genomic_preprocessing/output/",
+  "SNP_matrix_modeling_var_gt0.RData"
+)
+
+outdir <- "02_harvest_date/04_input_preparation/output"
+dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
 
 # -------------------------------
 # 2. Controllo esistenza file
@@ -140,9 +162,6 @@ cat("Colonne totali:", ncol(master_pcs), "\n\n")
 # -------------------------------
 # 10. Salvataggio report
 # -------------------------------
-outdir <- "02_harvest_date/02_input_preparation/output"
-dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
-
 sink(
   file.path(outdir, "final_check_model_inputs_report.txt")
 )
@@ -205,4 +224,4 @@ sink()
 # 11. Stampa finale
 # -------------------------------
 cat("File salvato:\n")
-cat("- Output/final_check_model_inputs_report.txt\n")
+cat("- ", file.path(outdir, "final_check_model_inputs_report.txt"), "\n")
