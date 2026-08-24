@@ -14,9 +14,9 @@ library(dplyr)
 # -------------------------------
 # 1. Percorsi file
 # -------------------------------
-bed_file <- "Input/SNPs_final_2022.bed"
-bim_file <- "Input/SNPs_final_2022.bim"
-fam_file <- "Input/SNPs_final_2022.fam"
+bed_file <- "01_common_genomic_preprocessing/input/SNPs_final_2022.bed"
+bim_file <- "01_common_genomic_preprocessing/input/SNPs_final_2022.bim"
+fam_file <- "01_common_genomic_preprocessing/input/SNPs_final_2022.fam"
 
 # -------------------------------
 # 2. Caricamento genomica
@@ -98,13 +98,23 @@ cat("\n")
 # -------------------------------
 # 9. Salvataggio output
 # -------------------------------
-dir.create("Output", showWarnings = FALSE)
+outdir <- "01_common_genomic_preprocessing/output"
+dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
 
 # salviamo in formato RData per non creare csv giganteschi inutili
-save(X_var, file = "Output/SNP_matrix_modeling_var_gt0.RData")
-write_csv(snp_info, "Output/SNP_info_modeling_var_gt0.csv")
+save(
+  X_var,
+  file = file.path(outdir, "SNP_matrix_modeling_var_gt0.RData")
+)
 
-sink("Output/SNP_matrix_modeling_report.txt")
+write_csv(
+  snp_info,
+  file.path(outdir, "SNP_info_modeling_var_gt0.csv")
+)
+
+sink(
+  file.path(outdir, "SNP_matrix_modeling_report.txt")
+)
 
 cat("=== STEP C5: SNP MATRIX FOR MODELING REPORT ===\n\n")
 cat("Numero genotipi:", nrow(X), "\n")
