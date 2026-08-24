@@ -14,14 +14,16 @@ library(dplyr)
 # -------------------------------
 # 1. Percorsi file
 # -------------------------------
-bed_file <- "01_common_genomic_preprocessing/input/SNPs_final_2022.bed"
-bim_file <- "01_common_genomic_preprocessing/input/SNPs_final_2022.bim"
-fam_file <- "01_common_genomic_preprocessing/input/SNPs_final_2022.fam"
+bed_file <- "data/raw/genotype/SNPs_final_2022.bed"
+bim_file <- "data/raw/genotype/SNPs_final_2022.bim"
+fam_file <- "data/raw/genotype/SNPs_final_2022.fam"
 
-pheno_file <- "02_harvest_date/01_phenotype_preprocessing/output/Harvest_date_processed_final.csv"
+pheno_file <- paste0(
+  "02_harvest_date/02_phenotype_preprocessing/output/",
+  "Harvest_date_processed_final.csv"
+)
 
-outdir <- "02_harvest_date/02_input_preparation/output"
-dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
+outdir <- "02_harvest_date/04_input_preparation/output"
 # -------------------------------
 # 2. Controllo esistenza file
 # -------------------------------
