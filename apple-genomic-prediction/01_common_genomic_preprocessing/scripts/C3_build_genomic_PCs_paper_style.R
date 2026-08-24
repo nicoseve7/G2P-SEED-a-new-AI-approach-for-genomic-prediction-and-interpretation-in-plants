@@ -16,12 +16,12 @@ library(dplyr)
 # -------------------------------
 # 1. Percorsi file
 # -------------------------------
-bed_file <- "Input/SNPs_final_2022.bed"
-bim_file <- "Input/SNPs_final_2022.bim"
-fam_file <- "Input/SNPs_final_2022.fam"
+bed_file <- "01_common_genomic_preprocessing/input/SNPs_final_2022.bed"
+bim_file <- "01_common_genomic_preprocessing/input/SNPs_final_2022.bim"
+fam_file <- "01_common_genomic_preprocessing/input/SNPs_final_2022.fam"
 
-outdir <- "Output"
-dir.create(outdir, showWarnings = FALSE)
+outdir <- "01_common_genomic_preprocessing/output"
+dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
 
 gds_file <- file.path(outdir, "SNPs_final_2022.gds")
 
