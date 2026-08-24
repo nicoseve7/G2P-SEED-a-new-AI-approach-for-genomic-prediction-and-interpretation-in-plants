@@ -15,8 +15,15 @@ library(tidyr)
 # -------------------------------
 # 1. Percorsi file
 # -------------------------------
-soil_file <- "Input/Soil_raw.xlsx"
-periods_file <- "Output/environment_periods_P1_P2.csv"
+soil_file <- "data/raw/environment/Soil_raw.xlsx"
+
+outdir <- "02_harvest_date/03_environment_preprocessing/output"
+dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
+
+periods_file <- file.path(
+  outdir,
+  "environment_periods_P1_P2.csv"
+)
 
 # -------------------------------
 # 2. Caricamento dati
@@ -91,12 +98,17 @@ cat("\n")
 # -------------------------------
 # 8. Salvataggio output
 # -------------------------------
-dir.create("Output", showWarnings = FALSE)
+write_csv(
+  soil_wide_location,
+  file.path(outdir, "soil_wide_location.csv")
+)
 
-write_csv(soil_wide_location, "Output/soil_wide_location.csv")
-write_csv(soil_by_envir, "Output/soil_by_envir.csv")
+write_csv(
+  soil_by_envir,
+  file.path(outdir, "soil_by_envir.csv")
+)
 
-sink("Output/soil_integration_report.txt")
+sink(file.path(outdir, "soil_integration_report.txt"))
 
 cat("=== STEP B5: SOIL INTEGRATION REPORT ===\n\n")
 cat("Numero righe soil raw:", nrow(soil), "\n")
@@ -121,6 +133,6 @@ sink()
 # 9. Stampa finale
 # -------------------------------
 cat("File salvati:\n")
-cat("- Output/soil_wide_location.csv\n")
-cat("- Output/soil_by_envir.csv\n")
-cat("- Output/soil_integration_report.txt\n")
+cat("- ", file.path(outdir, "soil_wide_location.csv"), "\n")
+cat("- ", file.path(outdir, "soil_by_envir.csv"), "\n")
+cat("- ", file.path(outdir, "soil_integration_report.txt"), "\n")
