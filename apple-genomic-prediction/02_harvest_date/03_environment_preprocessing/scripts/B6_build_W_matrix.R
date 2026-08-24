@@ -13,8 +13,18 @@ library(dplyr)
 # -------------------------------
 # 1. Percorsi file
 # -------------------------------
-weather_file <- "Output/weather_period_aggregation_wide.csv"
-soil_file <- "Output/soil_by_envir.csv"
+outdir <- "02_harvest_date/03_environment_preprocessing/output"
+dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
+
+weather_file <- file.path(
+  outdir,
+  "weather_period_aggregation_wide.csv"
+)
+
+soil_file <- file.path(
+  outdir,
+  "soil_by_envir.csv"
+)
 
 # -------------------------------
 # 2. Caricamento dati
@@ -79,14 +89,18 @@ W_matrix <- as.matrix(W_matrix)
 # -------------------------------
 # 7. Salvataggio output
 # -------------------------------
-dir.create("Output", showWarnings = FALSE)
-
-write_csv(W_df, "Output/W_environment_full.csv")
+write_csv(
+  W_df,
+  file.path(outdir, "W_environment_full.csv")
+)
 
 # salvataggio anche in formato RData, più vicino al paper
-save(W_matrix, file = "Output/W_environment_full.RData")
+save(
+  W_matrix,
+  file = file.path(outdir, "W_environment_full.RData")
+)
 
-sink("Output/W_environment_report.txt")
+sink(file.path(outdir, "W_environment_report.txt"))
 
 cat("=== STEP B6: W ENVIRONMENT REPORT ===\n\n")
 cat("Numero environment finali:", nrow(W_df), "\n")
@@ -106,6 +120,6 @@ sink()
 # 8. Stampa finale
 # -------------------------------
 cat("File salvati:\n")
-cat("- Output/W_environment_full.csv\n")
-cat("- Output/W_environment_full.RData\n")
-cat("- Output/W_environment_report.txt\n")
+cat("- ", file.path(outdir, "W_environment_full.csv"), "\n")
+cat("- ", file.path(outdir, "W_environment_full.RData"), "\n")
+cat("- ", file.path(outdir, "W_environment_report.txt"), "\n")
