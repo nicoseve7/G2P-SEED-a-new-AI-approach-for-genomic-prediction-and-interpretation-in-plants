@@ -15,10 +15,13 @@ library(dplyr)
 # -------------------------------
 # 1. Percorsi file
 # -------------------------------
-pheno_file <- "Input/Pheno_raw.xlsx"
-bed_file   <- "Input/SNPs_final_2022.bed"
-bim_file   <- "Input/SNPs_final_2022.bim"
-fam_file   <- "Input/SNPs_final_2022.fam"
+pheno_file <- "data/raw/phenotype/Pheno_raw.xlsx"
+bed_file <- "data/raw/genotype/SNPs_final_2022.bed"
+bim_file <- "data/raw/genotype/SNPs_final_2022.bim"
+fam_file <- "data/raw/genotype/SNPs_final_2022.fam"
+
+outdir <- "02_harvest_date/02_phenotype_preprocessing/output"
+dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
 
 # -------------------------------
 # 2. Caricamento dati
@@ -157,12 +160,19 @@ for (env in env_list) {
 # -------------------------------
 # 7. Salvataggio output
 # -------------------------------
-dir.create("Output", showWarnings = FALSE)
+write.csv(
+  trees_all,
+  file.path(outdir, "harvestdate_adjusted_values_trees.csv"),
+  row.names = FALSE
+)
 
-write.csv(trees_all, "Output/harvestdate_adjusted_values_trees.csv", row.names = FALSE)
-write.csv(means_all, "Output/harvestdate_adjusted_values_genotype.csv", row.names = FALSE)
+write.csv(
+  means_all,
+  file.path(outdir, "harvestdate_adjusted_values_genotype.csv"),
+  row.names = FALSE
+)
 
-sink("Output/harvestdate_spatial_correction_report.txt")
+sink(file.path(outdir, "harvestdate_spatial_correction_report.txt"))
 
 cat("=== STEP A5: HARVEST_DATE SPATIAL CORRECTION REPORT ===\n\n")
 
@@ -188,6 +198,6 @@ sink()
 # 8. Stampa finale
 # -------------------------------
 cat("\nFile salvati:\n")
-cat("- Output/harvestdate_adjusted_values_trees.csv\n")
-cat("- Output/harvestdate_adjusted_values_genotype.csv\n")
-cat("- Output/harvestdate_spatial_correction_report.txt\n")
+cat("- ", file.path(outdir, "harvestdate_adjusted_values_trees.csv"), "\n")
+cat("- ", file.path(outdir, "harvestdate_adjusted_values_genotype.csv"), "\n")
+cat("- ", file.path(outdir, "harvestdate_spatial_correction_report.txt"), "\n")
