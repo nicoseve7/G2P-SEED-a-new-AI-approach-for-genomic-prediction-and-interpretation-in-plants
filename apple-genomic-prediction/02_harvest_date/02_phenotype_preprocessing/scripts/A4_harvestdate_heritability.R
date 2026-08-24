@@ -14,11 +14,13 @@ library(lme4)
 # -------------------------------
 # 1. Percorsi file
 # -------------------------------
-pheno_file <- "Input/Pheno_raw.xlsx" 
-bed_file   <- "Input/SNPs_final_2022.bed" 
-bim_file   <- "Input/SNPs_final_2022.bim"
-fam_file   <- "Input/SNPs_final_2022.fam"
+pheno_file <- "data/raw/phenotype/Pheno_raw.xlsx"
+bed_file <- "data/raw/genotype/SNPs_final_2022.bed"
+bim_file <- "data/raw/genotype/SNPs_final_2022.bim"
+fam_file <- "data/raw/genotype/SNPs_final_2022.fam"
 
+outdir <- "02_harvest_date/02_phenotype_preprocessing/output"
+dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
 # -------------------------------
 # 2. Caricamento dati
 # -------------------------------
@@ -143,11 +145,13 @@ results$low_H2_flag <- ifelse(!is.na(results$H2) & results$H2 < 0.1, TRUE, FALSE
 # -------------------------------
 # 8. Salvataggio output
 # -------------------------------
-dir.create("Output", showWarnings = FALSE)
+write.csv(
+  results,
+  file.path(outdir, "harvestdate_heritability_by_environment.csv"),
+  row.names = FALSE
+)
 
-write.csv(results, "Output/harvestdate_heritability_by_environment.csv", row.names = FALSE)
-
-sink("Output/harvestdate_heritability_report.txt")
+sink(file.path(outdir, "harvestdate_heritability_report.txt"))
 
 cat("=== STEP A4: HARVEST_DATE HERITABILITY REPORT ===\n\n")
 print(results)
@@ -162,5 +166,5 @@ sink()
 # 9. Stampa finale
 # -------------------------------
 cat("\nFile salvati:\n")
-cat("- Output/harvestdate_heritability_by_environment.csv\n")
-cat("- Output/harvestdate_heritability_report.txt\n")
+cat("- ", file.path(outdir, "harvestdate_heritability_by_environment.csv"), "\n")
+cat("- ", file.path(outdir, "harvestdate_heritability_report.txt"), "\n")
