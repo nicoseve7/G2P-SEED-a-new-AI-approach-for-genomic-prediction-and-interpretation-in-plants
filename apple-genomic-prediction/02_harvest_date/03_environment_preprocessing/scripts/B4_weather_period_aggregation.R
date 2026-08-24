@@ -13,8 +13,18 @@ library(dplyr)
 # -------------------------------
 # 1. Percorsi file
 # -------------------------------
-weather_daily_file <- "Output/Weather_daily.csv"
-periods_file <- "Output/environment_periods_P1_P2.csv"
+outdir <- "02_harvest_date/03_environment_preprocessing/output"
+dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
+
+weather_daily_file <- file.path(
+  outdir,
+  "Weather_daily.csv"
+)
+
+periods_file <- file.path(
+  outdir,
+  "environment_periods_P1_P2.csv"
+)
 
 # -------------------------------
 # 2. Caricamento dati
@@ -125,12 +135,17 @@ cat("\n")
 # -------------------------------
 # 10. Salvataggio output
 # -------------------------------
-dir.create("Output", showWarnings = FALSE)
+write_csv(
+  weather_period_long,
+  file.path(outdir, "weather_period_aggregation_long.csv")
+)
 
-write_csv(weather_period_long, "Output/weather_period_aggregation_long.csv")
-write_csv(weather_period_wide, "Output/weather_period_aggregation_wide.csv")
+write_csv(
+  weather_period_wide,
+  file.path(outdir, "weather_period_aggregation_wide.csv")
+)
 
-sink("Output/weather_period_aggregation_report.txt")
+sink(file.path(outdir, "weather_period_aggregation_report.txt"))
 
 cat("=== STEP B4: WEATHER PERIOD AGGREGATION REPORT ===\n\n")
 cat("Numero righe weather daily:", nrow(weather_daily), "\n")
@@ -155,6 +170,6 @@ sink()
 # 11. Stampa finale
 # -------------------------------
 cat("File salvati:\n")
-cat("- Output/weather_period_aggregation_long.csv\n")
-cat("- Output/weather_period_aggregation_wide.csv\n")
-cat("- Output/weather_period_aggregation_report.txt\n")
+cat("- ", file.path(outdir, "weather_period_aggregation_long.csv"), "\n")
+cat("- ", file.path(outdir, "weather_period_aggregation_wide.csv"), "\n")
+cat("- ", file.path(outdir, "weather_period_aggregation_report.txt"), "\n")
