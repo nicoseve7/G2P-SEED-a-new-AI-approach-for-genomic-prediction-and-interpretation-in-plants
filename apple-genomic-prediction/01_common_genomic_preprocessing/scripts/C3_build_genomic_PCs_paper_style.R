@@ -115,20 +115,6 @@ cat("PCAir completata.\n\n")
 # -------------------------------
 # 8. Estrazione PC
 # -------------------------------
-# pc_df <- as.data.frame(pcair_obj$vectors)
-
-# # rinomina prima colonna in Genotype se serve
-# colnames(pc_df)[1] <- "Genotype"
-
-# # tieni solo le prime n PC effettivamente disponibili
-# pc_cols <- grep("^PC", colnames(pc_df), value = TRUE)
-# pc_cols <- pc_cols[1:min(n_pcs_to_save, length(pc_cols))]
-
-# pc_df <- pc_df %>%
-#   select(Genotype, all_of(pc_cols))
-# -------------------------------
-# 8. Estrazione PC
-# -------------------------------
 pc_mat <- as.data.frame(pcair_obj$vectors)
 
 # assicura che gli ID dei genotipi siano una colonna esplicita
