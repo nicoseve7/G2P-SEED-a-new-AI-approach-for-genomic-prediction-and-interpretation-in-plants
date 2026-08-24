@@ -14,12 +14,21 @@ library(snpStats)
 # -------------------------------
 # 1. Percorsi file
 # -------------------------------
-pheno_file <- "02_harvest_date/01_phenotype_preprocessing/output/Harvest_date_processed_final.csv"
-W_file <- "02_harvest_date/02_input_preparation/input/W_environment_paper_style.csv"
+pheno_file <- paste0(
+  "02_harvest_date/02_phenotype_preprocessing/output/",
+  "Harvest_date_processed_final.csv"
+)
 
-bed_file <- "01_common_genomic_preprocessing/input/SNPs_final_2022.bed"
-bim_file <- "01_common_genomic_preprocessing/input/SNPs_final_2022.bim"
-fam_file <- "01_common_genomic_preprocessing/input/SNPs_final_2022.fam"
+W_file <- paste0(
+  "02_harvest_date/03_environment_preprocessing/output/",
+  "W_environment_paper_style.csv"
+)
+
+bed_file <- "data/raw/genotype/SNPs_final_2022.bed"
+bim_file <- "data/raw/genotype/SNPs_final_2022.bim"
+fam_file <- "data/raw/genotype/SNPs_final_2022.fam"
+
+outdir <- "02_harvest_date/04_input_preparation/output"
 
 # -------------------------------
 # 2. Caricamento dati
@@ -91,7 +100,6 @@ master_df <- master_df %>%
 # -------------------------------
 # 10. Salvataggio output
 # -------------------------------
-outdir <- "02_harvest_date/02_input_preparation/output"
 dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
 
 write_csv(
@@ -127,5 +135,5 @@ sink()
 # 11. Stampa finale
 # -------------------------------
 cat("File salvati:\n")
-cat("- Output/master_alignment_table.csv\n")
-cat("- Output/master_alignment_table_report.txt\n")
+cat("- ", file.path(outdir, "master_alignment_table.csv"), "\n")
+cat("- ", file.path(outdir, "master_alignment_table_report.txt"), "\n")
