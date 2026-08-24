@@ -14,8 +14,10 @@ library(readr)
 # -------------------------------
 # 1. Percorso file
 # -------------------------------
-weather_file <- "Input/Weather_raw.xlsx"
+weather_file <- "data/raw/environment/Weather_raw.xlsx"
 
+outdir <- "02_harvest_date/03_environment_preprocessing/output"
+dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
 # -------------------------------
 # 2. Caricamento dati (Carica il file weather hourly)
 # -------------------------------
@@ -72,11 +74,12 @@ cat("\n")
 # -------------------------------
 # 7. Salvataggio output
 # -------------------------------
-dir.create("Output", showWarnings = FALSE)
+write_csv(
+  d1,
+  file.path(outdir, "Weather_daily.csv")
+)
 
-write_csv(d1, "Output/Weather_daily.csv")
-
-sink("Output/weather_daily_report.txt")
+sink(file.path(outdir, "weather_daily_report.txt"))
 
 cat("=== STEP B2: WEATHER DAILY REPORT ===\n\n")
 cat("Numero righe iniziali:", nrow(weather), "\n")
@@ -100,5 +103,5 @@ sink()
 # 8. Stampa finale
 # -------------------------------
 cat("File salvati:\n")
-cat("- Output/Weather_daily.csv\n")
-cat("- Output/weather_daily_report.txt\n")
+cat("- ", file.path(outdir, "Weather_daily.csv"), "\n")
+cat("- ", file.path(outdir, "weather_daily_report.txt"), "\n")
