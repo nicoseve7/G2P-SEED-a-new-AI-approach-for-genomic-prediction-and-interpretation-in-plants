@@ -13,8 +13,11 @@ library(dplyr)
 # -------------------------------
 # 1. Percorsi file
 # -------------------------------
-weather_file <- "Input/Weather_raw.xlsx"
-soil_file <- "Input/Soil_raw.xlsx"
+weather_file <- "data/raw/environment/Weather_raw.xlsx"
+soil_file <- "data/raw/environment/Soil_raw.xlsx"
+
+outdir <- "02_harvest_date/03_environment_preprocessing/output"
+dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
 
 # -------------------------------
 # 2. Controllo esistenza file
@@ -123,9 +126,7 @@ cat("\n")
 # -------------------------------
 # 9. Salvataggio report
 # -------------------------------
-dir.create("Output", showWarnings = FALSE)
-
-sink("Output/environment_audit_report.txt")
+sink(file.path(outdir, "environment_audit_report.txt"))
 
 cat("=== STEP B1: ENVIRONMENT AUDIT REPORT ===\n\n")
 
@@ -197,4 +198,4 @@ sink()
 # 10. Stampa finale
 # -------------------------------
 cat("File salvato:\n")
-cat("- Output/environment_audit_report.txt\n")
+cat("- ", file.path(outdir, "environment_audit_report.txt"), "\n")
