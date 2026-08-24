@@ -13,11 +13,11 @@ library(dplyr)
 # -------------------------------
 # 1. Percorsi file
 # -------------------------------
-master_pcs_file <- "Output/master_alignment_table_with_PCs.csv"
-pcs_file <- "Output/genomic_PCs_20_paper_style.csv"
-pve_file <- "Output/genomic_PCs_variance_explained_paper_style.csv"
-snp_info_file <- "Output/SNP_info_modeling_var_gt0.csv"
-snp_matrix_file <- "Output/SNP_matrix_modeling_var_gt0.RData"
+master_pcs_file <- "02_harvest_date/02_input_preparation/output/master_alignment_table_with_PCs.csv"
+pcs_file <- "01_common_genomic_preprocessing/output/genomic_PCs_20_paper_style.csv"
+pve_file <- "01_common_genomic_preprocessing/output/genomic_PCs_variance_explained_paper_style.csv"
+snp_info_file <- "01_common_genomic_preprocessing/output/SNP_info_modeling_var_gt0.csv"
+snp_matrix_file <- "01_common_genomic_preprocessing/output/SNP_matrix_modeling_var_gt0.RData"
 
 # -------------------------------
 # 2. Controllo esistenza file
@@ -140,9 +140,12 @@ cat("Colonne totali:", ncol(master_pcs), "\n\n")
 # -------------------------------
 # 10. Salvataggio report
 # -------------------------------
-dir.create("Output", showWarnings = FALSE)
+outdir <- "02_harvest_date/02_input_preparation/output"
+dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
 
-sink("Output/final_check_model_inputs_report.txt")
+sink(
+  file.path(outdir, "final_check_model_inputs_report.txt")
+)
 
 cat("=== STEP C6: FINAL CHECK MODEL INPUTS REPORT ===\n\n")
 
