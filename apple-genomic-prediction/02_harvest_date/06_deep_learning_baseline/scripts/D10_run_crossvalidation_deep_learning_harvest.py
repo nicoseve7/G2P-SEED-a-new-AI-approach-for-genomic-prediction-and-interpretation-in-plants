@@ -46,8 +46,19 @@ batch_size = 256
 epochs = 1500
 lr = 0.0001
 
-data_numpy_dir = "Output/Intermediate/numpy_arrays_harvest"
-save_dir = "Output/DeepLearning_Harvest"
+data_numpy_dir = os.path.join(
+    "02_harvest_date",
+    "06_deep_learning_baseline",
+    "output",
+    "numpy_arrays_harvest"
+)
+
+save_dir = os.path.join(
+    "02_harvest_date",
+    "06_deep_learning_baseline",
+    "output",
+    "DeepLearning_Harvest"
+)
 
 models_dir = os.path.join(save_dir, "Models", trait)
 pred_dir = os.path.join(save_dir, "Predictions")
@@ -81,8 +92,14 @@ pheno_subset_trait = pheno[~nan_mask_trait].reset_index(drop=True)
 # 5. Load and align CV template
 # ------------------------------------------------------------------------------
 print("Loading CV strategy...")
-cv_template = pd.read_csv("Input/CV1_Strategy/Harvest_date_CV.csv")
-
+cv_template = pd.read_csv(
+    os.path.join(
+        "data",
+        "raw",
+        "cv",
+        "Harvest_date_CV.csv"
+    )
+)
 cv_template["ID_template"] = cv_template[["Envir", "Genotype"]].astype(str).agg("-".join, axis=1)
 cv_template = cv_template.set_index("ID_template")
 
