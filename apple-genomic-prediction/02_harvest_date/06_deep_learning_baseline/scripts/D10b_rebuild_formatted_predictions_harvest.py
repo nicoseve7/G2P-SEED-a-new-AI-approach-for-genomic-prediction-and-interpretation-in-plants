@@ -5,12 +5,30 @@ import pandas as pd
 
 trait = "Harvest_date"
 
-wide_file = os.path.join(
-    "Output", "DeepLearning_Harvest", "Predictions", f"{trait}_predictions_wide.csv"
+base_dir = os.path.join(
+    "02_harvest_date",
+    "06_deep_learning_baseline",
+    "output",
+    "DeepLearning_Harvest"
 )
-cv_file = os.path.join("Input", "CV1_Strategy", "Harvest_date_CV.csv")
+
+wide_file = os.path.join(
+    base_dir,
+    "Predictions",
+    f"{trait}_predictions_wide.csv"
+)
+
+cv_file = os.path.join(
+    "data",
+    "raw",
+    "cv",
+    "Harvest_date_CV.csv"
+)
+
 out_file = os.path.join(
-    "Output", "DeepLearning_Harvest", "Predictions", f"{trait}_predictions_formatted.csv"
+    base_dir,
+    "Predictions",
+    f"{trait}_predictions_formatted.csv"
 )
 
 print("Loading wide predictions...")
