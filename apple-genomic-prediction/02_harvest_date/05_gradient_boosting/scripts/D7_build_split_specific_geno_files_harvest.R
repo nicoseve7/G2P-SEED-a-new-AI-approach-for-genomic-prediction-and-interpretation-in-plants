@@ -17,17 +17,27 @@ library(readxl)
 # -------------------------------
 # 1. Percorsi file
 # -------------------------------
-importance_file <- "Output/Intermediate/GB_feature_selection/feature_selection_results_harvest_date.csv"
-gds_candidates <- c(
-  "Output/Intermediate/SNPs_final_2022.gds",
-  "Output/SNPs_final_2022.gds"
+gb_dir <- "02_harvest_date/05_gradient_boosting/output"
+
+importance_file <- file.path(
+  gb_dir,
+  "feature_selection_results_harvest_date.csv"
 )
-gwas_file <- "Input/SupTable3_SNPS_GWAS.xls"
 
-save_dir <- "Output/Intermediate/geno_files/Harvest_date"
-dir.create("Output/Intermediate/geno_files", showWarnings = FALSE, recursive = TRUE)
+gds_path <- paste0(
+  "01_common_genomic_preprocessing/output/",
+  "SNPs_final_2022.gds"
+)
+
+gwas_file <- "data/raw/external/SupTable3_SNPS_GWAS.xls"
+
+save_dir <- file.path(
+  gb_dir,
+  "geno_files",
+  "Harvest_date"
+)
+
 dir.create(save_dir, showWarnings = FALSE, recursive = TRUE)
-
 # -------------------------------
 # 2. Caricamento risultati boosting
 # -------------------------------
@@ -40,10 +50,14 @@ cat("Numero split trovati:", n_distinct(importance_all$Split), "\n\n")
 # -------------------------------
 # 3. Gestione GDS
 # -------------------------------
-gds_path <- gds_candidates[file.exists(gds_candidates)][1]
-
-if (is.na(gds_path)) {
-  stop("Nessun file GDS trovato nei path attesi.")
+if (!file.exists(gds_path)) {
+  stop(
+    paste0(
+      "GDS file not found: ",
+      gds_path,
+      "\nRun the common genomic preprocessing first."
+    )
+  )
 }
 
 cat("Uso GDS:", gds_path, "\n\n")
@@ -161,9 +175,14 @@ summary_df <- bind_rows(summary_list)
 # -------------------------------
 # 6. Salvataggio summary e report
 # -------------------------------
-write_csv(summary_df, "Output/Intermediate/geno_files/Harvest_date/geno_split_summary_harvest_date.csv")
+write_csv(
+  summary_df,
+  file.path(save_dir, "geno_split_summary_harvest_date.csv")
+)
 
-sink("Output/Intermediate/geno_files/Harvest_date/geno_split_report_harvest_date.txt")
+sink(
+  file.path(save_dir, "geno_split_report_harvest_date.txt")
+)
 
 cat("=== STEP D7: SPLIT-SPECIFIC GENO FILES REPORT ===\n\n")
 cat("GDS usato:", gds_path, "\n\n")
@@ -178,6 +197,6 @@ cat("\n")
 sink()
 
 cat("File salvati:\n")
-cat("- Output/Intermediate/geno_files/Harvest_date/geno_<split>.csv\n")
-cat("- Output/Intermediate/geno_files/Harvest_date/geno_split_summary_harvest_date.csv\n")
-cat("- Output/Intermediate/geno_files/Harvest_date/geno_split_report_harvest_date.txt\n")
+cat("- ", file.path(save_dir, "geno_<split>.csv"), "\n")
+cat("- ", file.path(save_dir, "geno_split_summary_harvest_date.csv"), "\n")
+cat("- ", file.path(save_dir, "geno_split_report_harvest_date.txt"), "\n")
