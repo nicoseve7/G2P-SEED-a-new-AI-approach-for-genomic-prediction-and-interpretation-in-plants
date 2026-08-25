@@ -12,10 +12,11 @@ from sklearn.ensemble import GradientBoostingRegressor
 # -------------------------------
 # 1. Paths
 # -------------------------------
-GB_working_dir = "Output/Intermediate/GB_feature_selection/"
+GB_working_dir = "02_harvest_date/05_gradient_boosting/output"
 trait = "Harvest_date"
 trait_dir = os.path.join(GB_working_dir, trait)
 
+os.makedirs(GB_working_dir, exist_ok=True)
 # -------------------------------
 # 2. Load common genotype matrix
 # -------------------------------
