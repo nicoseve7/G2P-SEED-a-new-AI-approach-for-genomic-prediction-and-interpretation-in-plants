@@ -12,18 +12,59 @@ import pandas as pd
 # ------------------------------------------------------------------------------
 # 1. Paths
 # ------------------------------------------------------------------------------
-data_dir = "Output/Intermediate/numpy_arrays_harvest"
+data_dir = os.path.join(
+    "02_harvest_date",
+    "06_deep_learning_baseline",
+    "output",
+    "numpy_arrays_harvest"
+)
+
 snp_dir = os.path.join(data_dir, "snps")
 
 os.makedirs(data_dir, exist_ok=True)
 os.makedirs(snp_dir, exist_ok=True)
 
-pheno_file = "Output/master_alignment_table_with_PCs.csv"
-weather_file = "Output/Weather_daily.csv"
-pca_file = "Output/genomic_PCs_20_paper_style.csv"
-soil_file = "Output/soil_by_envir.csv"
-cv_file = "Input/CV1_Strategy/Harvest_date_CV.csv"
-geno_split_dir = "Output/Intermediate/geno_files/Harvest_date"
+pheno_file = os.path.join(
+    "02_harvest_date",
+    "04_input_preparation",
+    "output",
+    "master_alignment_table_with_PCs.csv"
+)
+
+weather_file = os.path.join(
+    "02_harvest_date",
+    "03_environment_preprocessing",
+    "output",
+    "Weather_daily.csv"
+)
+
+pca_file = os.path.join(
+    "01_common_genomic_preprocessing",
+    "output",
+    "genomic_PCs_20_paper_style.csv"
+)
+
+soil_file = os.path.join(
+    "02_harvest_date",
+    "03_environment_preprocessing",
+    "output",
+    "soil_by_envir.csv"
+)
+
+cv_file = os.path.join(
+    "data",
+    "raw",
+    "cv",
+    "Harvest_date_CV.csv"
+)
+
+geno_split_dir = os.path.join(
+    "02_harvest_date",
+    "05_gradient_boosting",
+    "output",
+    "geno_files",
+    "Harvest_date"
+)
 
 # ------------------------------------------------------------------------------
 # 2. Load base data
