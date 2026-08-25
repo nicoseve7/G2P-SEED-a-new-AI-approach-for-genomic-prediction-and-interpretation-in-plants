@@ -13,9 +13,18 @@ library(dplyr)
 # -------------------------------
 # 1. Percorsi file
 # -------------------------------
-fs_file <- "Output/Intermediate/GB_feature_selection/feature_selection_results_harvest_date.csv"
-summary_file <- "Output/Intermediate/GB_feature_selection/feature_selection_summary_harvest_date.csv"
+out_dir <- "02_harvest_date/05_gradient_boosting/output"
+dir.create(out_dir, recursive = TRUE, showWarnings = FALSE)
 
+fs_file <- file.path(
+  out_dir,
+  "feature_selection_results_harvest_date.csv"
+)
+
+summary_file <- file.path(
+  out_dir,
+  "feature_selection_summary_harvest_date.csv"
+)
 # -------------------------------
 # 2. Caricamento dati
 # -------------------------------
@@ -106,7 +115,6 @@ cat("\n")
 # -------------------------------
 # 10. Salvataggio output
 # -------------------------------
-out_dir <- "Output/Intermediate/GB_feature_selection"
 
 write_csv(snp_stability, file.path(out_dir, "feature_selection_snp_stability_harvest_date.csv"))
 write_csv(overlap_summary, file.path(out_dir, "feature_selection_overlap_summary_harvest_date.csv"))
@@ -143,8 +151,8 @@ sink()
 # 11. Fine
 # -------------------------------
 cat("File salvati:\n")
-cat("- Output/Intermediate/GB_feature_selection/feature_selection_snp_stability_harvest_date.csv\n")
-cat("- Output/Intermediate/GB_feature_selection/feature_selection_overlap_summary_harvest_date.csv\n")
-cat("- Output/Intermediate/GB_feature_selection/feature_selection_top50_stable_snps_harvest_date.csv\n")
-cat("- Output/Intermediate/GB_feature_selection/feature_selection_split_counts_harvest_date.csv\n")
-cat("- Output/Intermediate/GB_feature_selection/feature_selection_stability_report_harvest_date.txt\n")
+cat("- ", file.path(out_dir, "feature_selection_snp_stability_harvest_date.csv"), "\n")
+cat("- ", file.path(out_dir, "feature_selection_overlap_summary_harvest_date.csv"), "\n")
+cat("- ", file.path(out_dir, "feature_selection_top50_stable_snps_harvest_date.csv"), "\n")
+cat("- ", file.path(out_dir, "feature_selection_split_counts_harvest_date.csv"), "\n")
+cat("- ", file.path(out_dir, "feature_selection_stability_report_harvest_date.txt"), "\n")
