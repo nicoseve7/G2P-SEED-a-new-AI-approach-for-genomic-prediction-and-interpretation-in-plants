@@ -15,17 +15,23 @@ library(lme4)
 # -------------------------------
 # 1. Percorsi file
 # -------------------------------
-pheno_file <- "Output/Harvest_date_processed_final.csv"
-cv_file <- "Input/CV1_Strategy/Harvest_date_CV.csv"
-snp_matrix_file <- "Output/SNP_matrix_modeling_var_gt0.RData"
+pheno_file <- paste0(
+  "02_harvest_date/02_phenotype_preprocessing/output/",
+  "Harvest_date_processed_final.csv"
+)
 
-gb_dir <- "Output/Intermediate/GB_feature_selection"
+cv_file <- "data/raw/cv/Harvest_date_CV.csv"
+
+snp_matrix_file <- paste0(
+  "01_common_genomic_preprocessing/output/",
+  "SNP_matrix_modeling_var_gt0.RData"
+)
+
+gb_dir <- "02_harvest_date/05_gradient_boosting/output"
 trait_dir <- file.path(gb_dir, "Harvest_date")
 
-dir.create("Output/Intermediate", showWarnings = FALSE, recursive = TRUE)
 dir.create(gb_dir, showWarnings = FALSE, recursive = TRUE)
 dir.create(trait_dir, showWarnings = FALSE, recursive = TRUE)
-
 # -------------------------------
 # 2. Caricamento dati
 # -------------------------------
@@ -39,7 +45,6 @@ cat("Caricamento matrice SNP...\n")
 load(snp_matrix_file)   # carica X_var
 
 cat("Caricamento completato.\n\n")
-
 # -------------------------------
 # 3. Chiavi univoche per confronto
 # -------------------------------
@@ -210,8 +215,8 @@ cat("\n")
 sink()
 
 cat("File salvati:\n")
-cat("- Output/Intermediate/GB_feature_selection/all.geno\n")
-cat("- Output/Intermediate/GB_feature_selection/Harvest_date_CV_aligned.csv\n")
-cat("- Output/Intermediate/GB_feature_selection/Harvest_date/<25 split>.csv\n")
-cat("- Output/Intermediate/GB_feature_selection/Harvest_date_split_summary.csv\n")
-cat("- Output/Intermediate/GB_feature_selection/GB_inputs_from_repo_CV_report.txt\n")
+cat("- ", file.path(gb_dir, "all.geno"), "\n")
+cat("- ", file.path(gb_dir, "Harvest_date_CV_aligned.csv"), "\n")
+cat("- ", file.path(trait_dir, "<25 split>.csv"), "\n")
+cat("- ", file.path(gb_dir, "Harvest_date_split_summary.csv"), "\n")
+cat("- ", file.path(gb_dir, "GB_inputs_from_repo_CV_report.txt"), "\n")
