@@ -13,7 +13,12 @@ import matplotlib.pyplot as plt
 # ------------------------------------------------------------------------------
 # Paths
 # ------------------------------------------------------------------------------
-base_dir = "Output/DeepLearning_Harvest"
+base_dir = os.path.join(
+    "02_harvest_date",
+    "06_deep_learning_baseline",
+    "output",
+    "DeepLearning_Harvest"
+)
 metrics_file = os.path.join(base_dir, "Harvest_date_metrics_splits.csv")
 plot_dir = os.path.join(base_dir, "Plots")
 os.makedirs(plot_dir, exist_ok=True)
