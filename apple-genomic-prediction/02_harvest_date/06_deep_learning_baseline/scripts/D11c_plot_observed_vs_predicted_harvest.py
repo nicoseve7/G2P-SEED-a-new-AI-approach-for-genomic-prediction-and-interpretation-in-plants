@@ -16,10 +16,24 @@ from math import sqrt
 # ------------------------------------------------------------------------------
 # Paths
 # ------------------------------------------------------------------------------
-pred_file = os.path.join(
-    "Output", "DeepLearning_Harvest", "Predictions", "Harvest_date_predictions_formatted.csv"
+base_dir = os.path.join(
+    "02_harvest_date",
+    "06_deep_learning_baseline",
+    "output",
+    "DeepLearning_Harvest"
 )
-plot_dir = os.path.join("Output", "DeepLearning_Harvest", "Plots")
+
+pred_file = os.path.join(
+    base_dir,
+    "Predictions",
+    "Harvest_date_predictions_formatted.csv"
+)
+
+plot_dir = os.path.join(
+    base_dir,
+    "Plots"
+)
+
 os.makedirs(plot_dir, exist_ok=True)
 
 # ------------------------------------------------------------------------------
