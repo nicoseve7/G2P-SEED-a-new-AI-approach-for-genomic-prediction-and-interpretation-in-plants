@@ -7,4 +7,4 @@ Required genotype input files:
 These files are not included in the repository because of their size and/or data-sharing restrictions.
 
 To reproduce the preprocessing pipeline, place the three PLINK files in this directory using the filenames reported above.
-You can retrieve the files from this link: 
+You can retrieve the files from this link: https://doi.org/10.5281/zenodo.22116523
