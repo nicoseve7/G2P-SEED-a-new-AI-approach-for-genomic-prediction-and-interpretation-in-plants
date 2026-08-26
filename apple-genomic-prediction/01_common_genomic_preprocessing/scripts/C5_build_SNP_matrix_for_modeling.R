@@ -1,6 +1,6 @@
 # ==================================================
 # C5_build_SNP_matrix_for_modeling.R
-# Costruzione matrice SNP per il modeling
+# SNP matrix construction for the modeling
 # ==================================================
 
 rm(list = ls())
@@ -12,21 +12,21 @@ library(readr)
 library(dplyr)
 
 # -------------------------------
-# 1. Percorsi file
+# 1. File paths
 # -------------------------------
 bed_file <- "data/raw/genotype/SNPs_final_2022.bed"
 bim_file <- "data/raw/genotype/SNPs_final_2022.bim"
 fam_file <- "data/raw/genotype/SNPs_final_2022.fam"
 
 # -------------------------------
-# 2. Caricamento genomica
+# 2. Genomic
 # -------------------------------
 cat("Caricamento genomica PLINK...\n")
 geno <- read.plink(bed_file, bim_file, fam_file)
 cat("Caricamento completato.\n\n")
 
 # -------------------------------
-# 3. Estrazione matrice raw
+# 3. Extraction raw matrice
 # -------------------------------
 cat("Estrazione matrice genotipica raw...\n")
 
@@ -42,7 +42,7 @@ colnames(X_raw) <- snp_ids
 cat("Dimensioni X_raw:", nrow(X_raw), "x", ncol(X_raw), "\n\n")
 
 # -------------------------------
-# 4. Ricodifica per modeling
+# 4. Recoding for modeling
 # -------------------------------
 cat("Ricodifica SNP 1/2/3 -> 0/1/2 ...\n")
 X <- X_raw - 1
@@ -52,7 +52,7 @@ print(range(X, na.rm = TRUE))
 cat("\n")
 
 # -------------------------------
-# 5. Controlli missing
+# 5. Missing checks
 # -------------------------------
 cat("Calcolo missing...\n")
 
@@ -63,7 +63,7 @@ cat("SNP con almeno un missing:", sum(missing_per_snp > 0), "\n")
 cat("Genotipi con almeno un missing:", sum(missing_per_genotype > 0), "\n\n")
 
 # -------------------------------
-# 6. Rimozione SNP senza variabilità
+# 6. Removal of SNPs without variability
 # -------------------------------
 cat("Rimozione SNP con varianza zero...\n")
 
@@ -78,14 +78,14 @@ cat("Numero SNP con varianza > 0:", ncol(X_var), "\n")
 cat("Numero SNP rimossi:", ncol(X) - ncol(X_var), "\n\n")
 
 # -------------------------------
-# 7. Tabella info SNP
+# 7. Table info SNP
 # -------------------------------
 snp_info <- map_var %>%
   mutate(snp.name = as.character(snp.name)) %>%
   select(snp.name, chromosome, position, allele.1, allele.2)
 
 # -------------------------------
-# 8. Anteprima output
+# 8. Output preview
 # -------------------------------
 cat("Prime righe matrice SNP (prime 10 colonne):\n")
 print(X_var[1:min(5, nrow(X_var)), 1:min(10, ncol(X_var)), drop = FALSE])
@@ -96,12 +96,12 @@ print(head(snp_info))
 cat("\n")
 
 # -------------------------------
-# 9. Salvataggio output
+# 9. Save output
 # -------------------------------
 outdir <- "02_harvest_date/01_common_genomic_preprocessing/output"
 dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
 
-# salviamo in formato RData per non creare csv giganteschi inutili
+# savin in RData format to do not create huge useless csv
 save(
   X_var,
   file = file.path(outdir, "SNP_matrix_modeling_var_gt0.RData")
@@ -136,7 +136,7 @@ cat("\n")
 sink()
 
 # -------------------------------
-# 10. Stampa finale
+# 10. Finale print
 # -------------------------------
 cat("File salvati:\n")
 cat("- ", file.path(outdir, "SNP_matrix_modeling_var_gt0.RData"), "\n")
