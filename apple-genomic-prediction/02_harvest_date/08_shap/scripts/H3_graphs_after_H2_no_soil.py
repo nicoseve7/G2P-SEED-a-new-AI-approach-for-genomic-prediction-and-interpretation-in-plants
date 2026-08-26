@@ -18,7 +18,11 @@ import matplotlib.pyplot as plt
 TRAIT = "Harvest_date"
 MODEL_NAME = "paper4branches_bio_geni_relu_concathidden_dropout_meteoexp_v3_no_soil"
 
-OUT_DIR = Path("Output")
+OUT_DIR = (
+    Path("02_harvest_date")
+    / "08_shap"
+    / "output"
+)
 
 AGG_DIR = OUT_DIR / "Interpretation" / TRAIT / "Aggregated_tables"
 GRAPH_DIR = OUT_DIR / "Interpretation" / TRAIT / "Graphs"
