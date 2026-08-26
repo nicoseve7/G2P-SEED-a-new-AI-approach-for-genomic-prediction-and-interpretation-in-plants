@@ -9,11 +9,38 @@ import pandas as pd
 
 TRAIT = "Harvest_date"
 
-GENO_DIR = Path("../Output/Intermediate/geno_files") / TRAIT
-GLOBAL_SNP_GENE_FILE = Path("../bio_geni_relu_concathidden/Output/biologic_objects/snp_gene_mapping/global_snp_gene_edges.csv")
+OUT_DIR = (
+    Path("02_harvest_date")
+    / "07_neural_network"
+    / "output"
+)
 
-OUT_BASE_DIR = Path("Output/biologic_objects/split_inputs")
-REPORTS_DIR = Path("Output/biologic_objects/reports")
+GENO_DIR = (
+    Path("02_harvest_date")
+    / "05_gradient_boosting"
+    / "output"
+    / "geno_files"
+    / TRAIT
+)
+
+GLOBAL_SNP_GENE_FILE = (
+    OUT_DIR
+    / "biologic_objects"
+    / "snp_gene_mapping"
+    / "global_snp_gene_edges.csv"
+)
+
+OUT_BASE_DIR = (
+    OUT_DIR
+    / "biologic_objects"
+    / "split_inputs"
+)
+
+REPORTS_DIR = (
+    OUT_DIR
+    / "biologic_objects"
+    / "reports"
+)
 
 OUT_BASE_DIR.mkdir(parents=True, exist_ok=True)
 REPORTS_DIR.mkdir(parents=True, exist_ok=True)
