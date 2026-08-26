@@ -18,21 +18,27 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-
-BASE_DIR = Path(".")
-INPUT_BASE = BASE_DIR / "Input" / "base_files"
-INPUT_DERIVED = BASE_DIR / "Input" / "derived"
-OUT_DIR = BASE_DIR / "Output" / "numpy_arrays_weather_exp"
+OUT_DIR = (
+    Path("02_harvest_date")
+    / "07_neural_network"
+    / "output"
+    / "weather_features"
+)
 
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
-META_FILE = INPUT_BASE / "sample_metadata_harvest.csv"
+META_FILE = (
+    Path("02_harvest_date")
+    / "06_deep_learning_baseline"
+    / "output"
+    / "numpy_arrays_harvest"
+    / "sample_metadata_harvest.csv"
+)
 
 DERIVED_FILES = {
-    "v2": INPUT_DERIVED / "weather_period_features_v2.csv",
-    "v3": INPUT_DERIVED / "weather_period_features_v3_splitP2.csv",
+    "v2": OUT_DIR / "weather_period_features_v2.csv",
+    "v3": OUT_DIR / "weather_period_features_v3_splitP2.csv",
 }
-
 
 def process_one_version(version_name: str, feature_file: Path):
     print(f"\n=== Processing weather version: {version_name} ===")
