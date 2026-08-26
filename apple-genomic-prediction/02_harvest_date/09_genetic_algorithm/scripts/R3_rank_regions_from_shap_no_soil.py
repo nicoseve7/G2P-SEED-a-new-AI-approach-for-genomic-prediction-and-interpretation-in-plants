@@ -33,21 +33,44 @@ import numpy as np
 
 TRAIT = "Harvest_date"
 
-PROJECT_DIR = Path(".")
-OUTPUT_DIR = PROJECT_DIR / "Output"
+GA_ROOT = (
+    Path("02_harvest_date")
+    / "09_genetic_algorithm"
+)
 
-RANK_DIR = OUTPUT_DIR / "02_regioni_ranked"
+OUTPUT_DIR = GA_ROOT / "output"
+
+RANK_DIR = (
+    OUTPUT_DIR
+    / "02_regioni_ranked"
+)
 RANK_DIR.mkdir(parents=True, exist_ok=True)
 
-# Static region membership files from the original full-V3/GA region project
-ORIGINAL_REGION_DIR = Path("../regioni_ga_harvest/Output/00_regioni")
+ORIGINAL_REGION_DIR = (
+    OUTPUT_DIR
+    / "00_region_membership"
+)
 
-# Optional static annotated region summaries from original project
-ORIGINAL_ANNOT_DIR = Path("../regioni_ga_harvest/Output/01_regioni_annotate")
+ORIGINAL_ANNOT_DIR = (
+    OUTPUT_DIR
+    / "01_region_annotations"
+)
+
+NO_SOIL_MODEL_NAME = (
+    "paper4branches_bio_geni_relu_concathidden_dropout_meteoexp_v3_no_soil"
+)
+
+NO_SOIL_AGG_DIR = (
+    Path("02_harvest_date")
+    / "08_shap"
+    / "output"
+    / "Interpretation"
+    / TRAIT
+    / "Aggregated_tables"
+)
 
 # No-soil SHAP SNP summary
-NO_SOIL_MODEL_NAME = "paper4branches_bio_geni_relu_concathidden_dropout_meteoexp_v3_no_soil"
-NO_SOIL_AGG_DIR = Path("../senza_suolo/Output/Interpretation/Harvest_date/Aggregated_tables")
+
 NO_SOIL_SNP_SHAP_FILE = (
     NO_SOIL_AGG_DIR
     / f"SUMMARY_all_snp_SHAP_{NO_SOIL_MODEL_NAME}_{TRAIT}.csv"
