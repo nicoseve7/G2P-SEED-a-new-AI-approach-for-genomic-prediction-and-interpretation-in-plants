@@ -17,14 +17,46 @@ import pandas as pd
 TRAIT = "Harvest_date"
 MODEL_NAME = "paper4branches_bio_geni_relu_concathidden_dropout_meteoexp_v3_no_soil"
 
-OUT_DIR = Path("Output")
+OUT_DIR = (
+    Path("02_harvest_date")
+    / "08_shap"
+    / "output"
+)
 
-SPLITWISE_DIR = OUT_DIR / "Interpretation" / TRAIT / "Splitwise_tables"
-DICT_DIR = OUT_DIR / "Interpretation" / TRAIT / "Feature_dictionaries"
-AGG_DIR = OUT_DIR / "Interpretation" / TRAIT / "Aggregated_tables"
+NN_OUT_DIR = (
+    Path("02_harvest_date")
+    / "07_neural_network"
+    / "output"
+)
+
+SPLITWISE_DIR = (
+    OUT_DIR
+    / "Interpretation"
+    / TRAIT
+    / "Splitwise_tables"
+)
+
+DICT_DIR = (
+    OUT_DIR
+    / "Interpretation"
+    / TRAIT
+    / "Feature_dictionaries"
+)
+
+AGG_DIR = (
+    OUT_DIR
+    / "Interpretation"
+    / TRAIT
+    / "Aggregated_tables"
+)
+
 AGG_DIR.mkdir(parents=True, exist_ok=True)
 
-SPLIT_INPUTS_DIR = Path("Output/biologic_objects/split_inputs")
+SPLIT_INPUTS_DIR = (
+    NN_OUT_DIR
+    / "biologic_objects"
+    / "split_inputs"
+)
 
 WEATHER_DICT_FILE = DICT_DIR / "weather_v3_feature_dictionary.csv"
 
