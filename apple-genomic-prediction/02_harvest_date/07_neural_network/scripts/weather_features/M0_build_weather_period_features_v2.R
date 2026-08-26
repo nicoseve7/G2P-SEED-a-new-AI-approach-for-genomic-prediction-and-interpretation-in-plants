@@ -31,16 +31,36 @@ library(dplyr)
 # -------------------------------
 # 1. Percorsi file
 # -------------------------------
-weather_daily_file <- "Input/base_files/Weather_daily.csv"
-periods_file       <- "Input/base_files/environment_periods_P1_P2.csv"
+weather_daily_file <- paste0(
+  "02_harvest_date/03_environment_preprocessing/output/",
+  "Weather_daily.csv"
+)
 
-out_csv_file    <- "Input/derived/weather_period_features_v2.csv"
-out_rdata_file  <- "Input/derived/weather_period_features_v2.RData"
-report_file     <- "Output/reports/weather_period_features_v2_report.txt"
+periods_file <- paste0(
+  "02_harvest_date/03_environment_preprocessing/output/",
+  "environment_periods_P1_P2.csv"
+)
 
-dir.create("Input/derived", recursive = TRUE, showWarnings = FALSE)
-dir.create("Output/reports", recursive = TRUE, showWarnings = FALSE)
+outdir <- "02_harvest_date/07_neural_network/output/weather_features"
+report_dir <- file.path(outdir, "reports")
 
+dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
+dir.create(report_dir, recursive = TRUE, showWarnings = FALSE)
+
+out_csv_file <- file.path(
+  outdir,
+  "weather_period_features_v2.csv"
+)
+
+out_rdata_file <- file.path(
+  outdir,
+  "weather_period_features_v2.RData"
+)
+
+report_file <- file.path(
+  report_dir,
+  "weather_period_features_v2_report.txt"
+)
 # -------------------------------
 # 2. Caricamento dati
 # -------------------------------
