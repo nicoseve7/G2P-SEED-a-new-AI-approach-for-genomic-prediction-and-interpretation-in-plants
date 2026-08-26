@@ -12,11 +12,27 @@ from sklearn.model_selection import train_test_split
 # SETTINGS
 # =============================================================================
 
-PROJECT_DIR = Path("MLP_ReLU")
-OUT_DIR = Path("Output") / "datasets"
+OUT_DIR = (
+    Path("02_harvest_date")
+    / "07_neural_network"
+    / "output"
+    / "datasets"
+)
 
-META_FILE = Path("../Output/Intermediate/numpy_arrays_harvest/sample_metadata_harvest.csv")
-CV_FILE = Path("../Input/CV1_Strategy/Harvest_date_CV.csv")
+META_FILE = (
+    Path("02_harvest_date")
+    / "06_deep_learning_baseline"
+    / "output"
+    / "numpy_arrays_harvest"
+    / "sample_metadata_harvest.csv"
+)
+
+CV_FILE = (
+    Path("data")
+    / "raw"
+    / "cv"
+    / "Harvest_date_CV.csv"
+)
 
 TRAIT = "Harvest_date"
 VAL_GENOTYPE_FRAC = 0.15
