@@ -1,6 +1,6 @@
 # ===============================
 # A2_id_mapping.R
-# Definizione del mapping ID
+# ID mapping definition
 # ===============================
 
 rm(list = ls())
@@ -11,7 +11,7 @@ library(readxl)
 library(snpStats)
 
 # -------------------------------
-# 1. Percorsi file
+# 1. File paths
 # -------------------------------
 pheno_file <- "data/raw/phenotype/Pheno_raw.xlsx"
 bed_file <- "data/raw/genotype/SNPs_final_2022.bed"
@@ -19,7 +19,7 @@ bim_file <- "data/raw/genotype/SNPs_final_2022.bim"
 fam_file <- "data/raw/genotype/SNPs_final_2022.fam"
 
 # -------------------------------
-# 2. Caricamento dati/files
+# 2. Uploading Data/Files
 # -------------------------------
 cat("Caricamento fenotipo...\n")
 pheno <- as.data.frame(read_xlsx(pheno_file))
@@ -30,25 +30,25 @@ geno <- read.plink(bed_file, bim_file, fam_file)
 cat("Caricamento completato.\n\n")
 
 # -------------------------------
-# 3. Estrazione ID (li trasformo in testo e li ordino per poterli confrontare in modo pulito)
+# 3. Extracting IDs (I convert them to text and sort them so I can compare them neatly)
 # -------------------------------
 pheno_ids <- sort(unique(as.character(pheno$Genotype))) # prendo tutti i genotipi unici del file fenotipo
 pedigree_ids <- sort(unique(as.character(geno$fam$pedigree))) # prendo tutti gli ID unici di pedigree del file genomico
 member_ids <- sort(unique(as.character(geno$fam$member))) # tutti gli ID unici di member del file genomico
 
 # -------------------------------
-# 4. Confronto pedigree vs member
+# 4. pedigree vs member
 # -------------------------------
 cat("=== CONFRONTO pedigree vs member ===\n")
 
 same_length <- length(geno$fam$pedigree) == length(geno$fam$member) # controllo se hanno la stessa lunghezza
-same_values <- all(as.character(geno$fam$pedigree) == as.character(geno$fam$member)) # controlla se hanno esattamente gli stessi valori riga per riga, per capire se sono davvero equivalenti
+same_values <- all(as.character(geno$fam$pedigree) == as.character(geno$fam$member)) # Check to see if they have exactly the same values line by line, to determine if they are truly equivalent
 
 cat("Stessa lunghezza:", same_length, "\n")
 cat("Stessi valori riga per riga:", same_values, "\n\n")
 
 # -------------------------------
-# 5. Match fenotipo vs pedigree/member
+# 5. Phenotype vs. Pedigree/Member Match
 # -------------------------------
 cat("=== MATCH FENOTIPO ===\n")
 cat("Genotipi unici nel fenotipo:", length(pheno_ids), "\n")
@@ -59,7 +59,7 @@ cat("Match fenotipo con pedigree:", sum(pheno_ids %in% pedigree_ids), "\n")
 cat("Match fenotipo con member:", sum(pheno_ids %in% member_ids), "\n\n")
 
 # -------------------------------
-# 6. Genotipi del fenotipo senza match (trovo i nomi precisi)
+# 6. Genotypes for the phenotype with no matches (I'll find the exact names)
 # -------------------------------
 pheno_not_in_pedigree <- setdiff(pheno_ids, pedigree_ids)
 pheno_not_in_member <- setdiff(pheno_ids, member_ids)
@@ -73,7 +73,7 @@ print(pheno_not_in_member)
 cat("\n")
 
 # -------------------------------
-# 7. Genotipi del genomico non presenti nel fenotipo
+# 7. Genomic genotypes not present in the phenotype
 # -------------------------------
 pedigree_not_in_pheno <- setdiff(pedigree_ids, pheno_ids)
 member_not_in_pheno <- setdiff(member_ids, pheno_ids)
@@ -85,7 +85,7 @@ cat("=== ID genomici in member NON presenti nel fenotipo ===\n")
 cat("Numero:", length(member_not_in_pheno), "\n\n")
 
 # -------------------------------
-# 8. Scelta ID ufficiale
+# 8. Official ID Selection
 # -------------------------------
 chosen_id <- "member"
 
@@ -93,7 +93,7 @@ cat("=== SCELTA FINALE ===\n")
 cat("ID genomico scelto come riferimento:", chosen_id, "\n\n")
 
 # -------------------------------
-# 9. Creazione tabella di mapping
+# 9. Creating a Mapping Table
 # -------------------------------
 mapping_df <- data.frame(
   pheno_genotype = pheno_ids,
@@ -110,7 +110,7 @@ write.csv(
 )
 
 # -------------------------------
-# 10. Report testuale
+# 10. Report
 # -------------------------------
 sink(file.path(outdir, "id_mapping_report.txt"))
 
