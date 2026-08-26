@@ -42,22 +42,63 @@ MODE = "tune"
 TRAIT = "Harvest_date"
 MODEL_NAME = "paper4branches_bio_geni_relu_concathidden_dropout_meteoexp_v3_no_soil"
 
-OUT_DIR = Path("Output")
 
-META_FILE = Path("../Output/Intermediate/numpy_arrays_harvest/sample_metadata_harvest.csv")
-CV_FILE = Path("../Input/CV1_Strategy/Harvest_date_CV.csv")
-INNER_SPLITS_FILE = OUT_DIR / "datasets" / "inner_validation_splits_harvest.csv"
-
-GENO_DIR = Path("../Output/Intermediate/geno_files/Harvest_date")
-NPY_DIR = Path("../Output/Intermediate/numpy_arrays_harvest")
-SPLIT_INPUTS_DIR = OUT_DIR / "biologic_objects" / "split_inputs"
-
-WEATHER_EXP_DIR = Path("../esperimento_meteo/Output/numpy_arrays_weather_exp")
-WEATHER_EXP_FILE = WEATHER_EXP_DIR / "weather_period_features_v3.npy"
 
 GLOBAL_SEED = 42
 
-GRID = {
+GRID = {OUT_DIR = (
+    Path("02_harvest_date")
+    / "07_neural_network"
+    / "output"
+)
+
+META_FILE = (
+    Path("02_harvest_date")
+    / "06_deep_learning_baseline"
+    / "output"
+    / "numpy_arrays_harvest"
+    / "sample_metadata_harvest.csv"
+)
+
+CV_FILE = (
+    Path("data")
+    / "raw"
+    / "cv"
+    / "Harvest_date_CV.csv"
+)
+
+INNER_SPLITS_FILE = (
+    OUT_DIR
+    / "datasets"
+    / "inner_validation_splits_harvest.csv"
+)
+
+GENO_DIR = (
+    Path("02_harvest_date")
+    / "05_gradient_boosting"
+    / "output"
+    / "geno_files"
+    / "Harvest_date"
+)
+
+NPY_DIR = (
+    Path("02_harvest_date")
+    / "06_deep_learning_baseline"
+    / "output"
+    / "numpy_arrays_harvest"
+)
+
+SPLIT_INPUTS_DIR = (
+    OUT_DIR
+    / "biologic_objects"
+    / "split_inputs"
+)
+
+WEATHER_EXP_FILE = (
+    OUT_DIR
+    / "weather_features"
+    / "weather_period_features_v3.npy"
+)
     "learning_rate": [0.001, 0.0005],
     "l2_lambda": [0.0, 1e-5, 1e-4],
     "fusion_hidden_units": [16, 32, 64],
