@@ -22,7 +22,9 @@ import numpy as np
 # =============================================================================
 
 TRAIT = "Harvest_date"
-MODEL_NAME = "paper4branches_bio_geni_relu_concathidden_dropout_meteoexp_v3"
+MODEL_NAME = (
+    "paper4branches_bio_geni_relu_concathidden_dropout_meteoexp_v3_no_soil"
+)
 
 GA_ROOT = (
     Path("02_harvest_date")
