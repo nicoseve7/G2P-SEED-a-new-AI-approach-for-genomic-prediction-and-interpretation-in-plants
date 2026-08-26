@@ -62,14 +62,28 @@ WINDOW_LABEL = "50kb"
 TOP_K_REGIONS = 1000
 DATASET_LABEL = "no_soil_top1000_regions"
 
-GA_INPUT_DIR = Path("Output/03_ga_inputs")
+GA_ROOT = (
+    Path("02_harvest_date")
+    / "09_genetic_algorithm"
+)
+
+GA_INPUT_DIR = (
+    GA_ROOT
+    / "output"
+    / "03_ga_inputs"
+)
 
 X_SNP_FILE = GA_INPUT_DIR / "X_snp_top1000_regions_50kb_Harvest_date.csv"
 X_PCA_FILE = GA_INPUT_DIR / "X_pca_20_Harvest_date.csv"
 Y_FILE = GA_INPUT_DIR / "y_mean_adjusted_by_genotype_Harvest_date.csv"
 SNP_METADATA_FILE = GA_INPUT_DIR / "snp_metadata_top1000_regions_50kb_Harvest_date.csv"
 
-OUT_DIR = Path("Output/04_ga_runs/G2B_no_soil_multiseed_variable_split_inner3cv")
+OUT_DIR = (
+    GA_ROOT
+    / "output"
+    / "04_ga_runs"
+    / "G2B_no_soil_multiseed_variable_split_inner3cv"
+)
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 # Versione severa: ogni seed cambia anche train/test esterno.
