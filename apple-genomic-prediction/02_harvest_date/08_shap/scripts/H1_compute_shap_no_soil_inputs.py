@@ -41,23 +41,84 @@ for gpu in gpus:
 TRAIT = "Harvest_date"
 MODEL_NAME = "paper4branches_bio_geni_relu_concathidden_dropout_meteoexp_v3_no_soil"
 
-OUT_DIR = Path("Output")
+OUT_DIR = (
+    Path("02_harvest_date")
+    / "08_shap"
+    / "output"
+)
 
-META_FILE = Path("../Output/Intermediate/numpy_arrays_harvest/sample_metadata_harvest.csv")
-CV_FILE = Path("../Input/CV1_Strategy/Harvest_date_CV.csv")
+NN_OUT_DIR = (
+    Path("02_harvest_date")
+    / "07_neural_network"
+    / "output"
+)
 
-# In senza_suolo this should be local
-INNER_SPLITS_FILE = Path("Output/datasets/inner_validation_splits_harvest.csv")
+META_FILE = (
+    Path("02_harvest_date")
+    / "06_deep_learning_baseline"
+    / "output"
+    / "numpy_arrays_harvest"
+    / "sample_metadata_harvest.csv"
+)
 
-GENO_DIR = Path("../Output/Intermediate/geno_files/Harvest_date")
-NPY_DIR = Path("../Output/Intermediate/numpy_arrays_harvest")
-WEATHER_EXP_FILE = Path("../esperimento_meteo/Output/numpy_arrays_weather_exp/weather_period_features_v3.npy")
+CV_FILE = (
+    Path("data")
+    / "raw"
+    / "cv"
+    / "Harvest_date_CV.csv"
+)
 
-MODEL_DIR = OUT_DIR / "models"
-SPLIT_INPUTS_DIR = Path("Output/biologic_objects/split_inputs")
+INNER_SPLITS_FILE = (
+    NN_OUT_DIR
+    / "datasets"
+    / "inner_validation_splits_harvest.csv"
+)
 
-SAVE_DIR = OUT_DIR / "Interpretation" / TRAIT / "SHAP_arrays"
-SAVE_SPLITWISE_DIR = OUT_DIR / "Interpretation" / TRAIT / "Splitwise_tables"
+GENO_DIR = (
+    Path("02_harvest_date")
+    / "05_gradient_boosting"
+    / "output"
+    / "geno_files"
+    / "Harvest_date"
+)
+
+NPY_DIR = (
+    Path("02_harvest_date")
+    / "06_deep_learning_baseline"
+    / "output"
+    / "numpy_arrays_harvest"
+)
+
+WEATHER_EXP_FILE = (
+    NN_OUT_DIR
+    / "weather_features"
+    / "weather_period_features_v3.npy"
+)
+
+MODEL_DIR = (
+    NN_OUT_DIR
+    / "models"
+)
+
+SPLIT_INPUTS_DIR = (
+    NN_OUT_DIR
+    / "biologic_objects"
+    / "split_inputs"
+)
+
+SAVE_DIR = (
+    OUT_DIR
+    / "Interpretation"
+    / TRAIT
+    / "SHAP_arrays"
+)
+
+SAVE_SPLITWISE_DIR = (
+    OUT_DIR
+    / "Interpretation"
+    / TRAIT
+    / "Splitwise_tables"
+)
 
 SAVE_DIR.mkdir(parents=True, exist_ok=True)
 SAVE_SPLITWISE_DIR.mkdir(parents=True, exist_ok=True)
