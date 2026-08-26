@@ -1,6 +1,6 @@
 # ===============================
 # A3_pheno_summary.R
-# Riassunto del fenotipo per trait e per environment
+# Phenotype summary for trait and environment
 # ===============================
 
 rm(list = ls())
@@ -11,24 +11,21 @@ library(readxl)
 library(dplyr)
 
 # -------------------------------
-# 1. Percorso file
-# -------------------------------
-# -------------------------------
-# 1. Percorso file
+# 1. File paths
 # -------------------------------
 pheno_file <- "data/raw/phenotype/Pheno_raw.xlsx"
 
 outdir <- "02_harvest_date/01_data_audit/output"
 dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
 # -------------------------------
-# 2. Caricamento dati
+# 2. Loading data
 # -------------------------------
 cat("Caricamento file fenotipico...\n")
 pheno <- as.data.frame(read_xlsx(pheno_file))
 cat("Caricamento completato.\n\n")
 
 # -------------------------------
-# 3. Definizione trait che voglio analizzare
+# 3. Definition of the trait I want to analyze
 # -------------------------------
 trait_cols <- c(
   "Harvest_date",
@@ -44,7 +41,7 @@ trait_cols <- c(
   "Firmness"
 )
 
-# controllo che esistano davvero
+# Check to see if they actually exist
 trait_cols <- trait_cols[trait_cols %in% colnames(pheno)]
 
 cat("Trait trovati nel file:\n")
@@ -52,7 +49,7 @@ print(trait_cols)
 cat("\n")
 
 # -------------------------------
-# 4. Riepilogo globale per trait
+# 4. Overall Summary by Trait
 # -------------------------------
 cat("Calcolo riepilogo globale per trait...\n")
 
@@ -66,7 +63,7 @@ summary_global <- lapply(trait_cols, function(tr) {
     unique_envir = length(unique(df_sub$Envir)),
     stringsAsFactors = FALSE
   )
-}) # non_missing_obs sono le righe che ci sono davvero con valore disponibile; unique_genotypes è il numero di genotipi diversi che compaiono tra queste righe; unique_envir è in quanti environment compare quel trait
+}) # non_missing_obs refers to the actual number of rows with available values; unique_genotypes is the number of distinct genotypes that appear among these rows; unique_envir indicates the number of environments in which that trait appears
 
 summary_global <- bind_rows(summary_global)
 summary_global <- summary_global[order(-summary_global$non_missing_obs), ]
@@ -74,9 +71,9 @@ summary_global <- summary_global[order(-summary_global$non_missing_obs), ]
 cat("Riepilogo globale completato.\n\n")
 
 # -------------------------------
-# 5. Riepilogo per trait x environment
+# 5. Summary by trait × environment
 # -------------------------------
-cat("Calcolo riepilogo per trait x environment...\n") # per ogni trait prendo le righe non-missing, le raggruppo per Envir e poi calcolo non_missing_obs (qante osservazioni ci sono in quell'ambiente per quel trait) e unique_genotypes (quanti genotipi diversi ci sono in quell'ambiente per quel trait)
+cat("Calcolo riepilogo per trait x environment...\n") # For each trait, I take the non-missing rows, group them by Envir, and then calculate non_missing_obs (the number of observations in that environment for that trait) and unique_genotypes (the number of distinct genotypes in that environment for that trait)
 
 summary_by_env <- lapply(trait_cols, function(tr) {
   df_sub <- pheno[!is.na(pheno[[tr]]), ]
@@ -103,7 +100,7 @@ summary_by_env <- summary_by_env[order(summary_by_env$Trait, summary_by_env$Envi
 cat("Riepilogo per trait x environment completato.\n\n")
 
 # -------------------------------
-# 6. Salvataggio output
+# 6. Save output
 # -------------------------------
 write.csv(
   summary_global,
@@ -117,7 +114,7 @@ write.csv(
   row.names = FALSE
 )
 # -------------------------------
-# 7. Report testuale
+# 7. Report
 # -------------------------------
 sink(file.path(outdir, "pheno_summary_report.txt"))
 
@@ -134,7 +131,7 @@ cat("\n")
 sink()
 
 # -------------------------------
-# 8. Stampa finale
+# 8. Final print
 # -------------------------------
 cat("File salvati:\n")
 cat("- ", file.path(outdir, "pheno_summary_global.csv"), "\n")
