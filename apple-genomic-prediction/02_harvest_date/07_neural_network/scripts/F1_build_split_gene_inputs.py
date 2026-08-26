@@ -9,18 +9,35 @@ from pathlib import Path
 import pandas as pd
 import numpy as np
 
-
 TRAIT = "Harvest_date"
 
-OUT_DIR = Path("Output")
+OUT_DIR = (
+    Path("02_harvest_date")
+    / "07_neural_network"
+    / "output"
+)
+
 BIO_DIR = OUT_DIR / "biologic_objects"
 
-SNP_GENE_DIR = BIO_DIR / "snp_gene_mapping"
-SPLIT_INPUT_DIR = BIO_DIR / "split_inputs"
+SNP_GENE_DIR = (
+    BIO_DIR
+    / "snp_gene_mapping"
+)
+
+SPLIT_INPUT_DIR = (
+    BIO_DIR
+    / "split_inputs"
+)
+
 SPLIT_INPUT_DIR.mkdir(parents=True, exist_ok=True)
 
-GENO_DIR = Path(f"../Output/Intermediate/geno_files/{TRAIT}")
-
+GENO_DIR = (
+    Path("02_harvest_date")
+    / "05_gradient_boosting"
+    / "output"
+    / "geno_files"
+    / TRAIT
+)
 
 def load_split_snps(geno_dir: Path):
     files = sorted(geno_dir.glob("geno_CV*_Split*.csv"))
