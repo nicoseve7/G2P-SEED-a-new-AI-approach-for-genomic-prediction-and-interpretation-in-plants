@@ -45,9 +45,29 @@ warnings.filterwarnings("ignore")
 TRAIT = "Harvest_date"
 WINDOW_LABEL = "50kb"
 
-RUN_DIR = Path("Output/04_ga_runs/G2B_no_soil_multiseed_variable_split_inner3cv")
-GA_INPUT_DIR = Path("Output/03_ga_inputs")
-ANNOTATION_DIR = Path("../regioni_ga_harvest/Output/01_regioni_annotate")
+GA_ROOT = (
+    Path("02_harvest_date")
+    / "09_genetic_algorithm"
+)
+
+RUN_DIR = (
+    GA_ROOT
+    / "output"
+    / "04_ga_runs"
+    / "G2B_no_soil_multiseed_variable_split_inner3cv"
+)
+
+GA_INPUT_DIR = (
+    GA_ROOT
+    / "output"
+    / "03_ga_inputs"
+)
+
+ANNOTATION_DIR = (
+    GA_ROOT
+    / "output"
+    / "01_region_annotations"
+)
 
 REGION_STABILITY_FILE = RUN_DIR / "G2B_region_stability_across_seeds.csv"
 SNP_STABILITY_FILE = RUN_DIR / "G2B_snp_stability_across_seeds.csv"
