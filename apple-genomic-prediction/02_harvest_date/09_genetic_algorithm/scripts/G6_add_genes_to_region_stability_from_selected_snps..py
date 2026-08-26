@@ -29,8 +29,23 @@ import numpy as np
 TRAIT = "Harvest_date"
 TOLERANCE_BP = 10_000
 
-RUN_DIR = Path("Output/04_ga_runs/G2B_no_soil_multiseed_variable_split_inner3cv")
-GA_INPUT_DIR = Path("Output/03_ga_inputs")
+GA_ROOT = (
+    Path("02_harvest_date")
+    / "09_genetic_algorithm"
+)
+
+RUN_DIR = (
+    GA_ROOT
+    / "output"
+    / "04_ga_runs"
+    / "G2B_no_soil_multiseed_variable_split_inner3cv"
+)
+
+GA_INPUT_DIR = (
+    GA_ROOT
+    / "output"
+    / "03_ga_inputs"
+)
 
 REGION_STABILITY_FILE = RUN_DIR / "G2B_region_stability_across_seeds_with_unique_snps.csv"
 SNP_METADATA_FILE = GA_INPUT_DIR / "snp_metadata_top1000_regions_50kb_Harvest_date.csv"
