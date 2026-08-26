@@ -25,24 +25,54 @@ import numpy as np
 # =============================================================================
 
 TRAIT = "Harvest_date"
-MODEL_NAME = "paper4branches_bio_geni_relu_concathidden_dropout_meteoexp_v3"
 
-PROJECT_DIR = Path(".")
-INPUT_DIR = PROJECT_DIR / "Input"
-OUTPUT_DIR = PROJECT_DIR / "Output"
+MODEL_NAME = (
+    "paper4branches_bio_geni_relu_concathidden_dropout_meteoexp_v3_no_soil"
+)
 
-SHAP_DIR = INPUT_DIR / "shap_inputs"
-BASE_DIR = INPUT_DIR / "base_files"
+GA_ROOT = (
+    Path("02_harvest_date")
+    / "09_genetic_algorithm"
+)
 
-REGION_OUT_DIR = OUTPUT_DIR / "00_regioni"
+OUTPUT_DIR = GA_ROOT / "output"
+
+REGION_OUT_DIR = (
+    OUTPUT_DIR
+    / "00_region_membership"
+)
+
 REGION_OUT_DIR.mkdir(parents=True, exist_ok=True)
 
-ALL_SNP_SHAP_FILE = SHAP_DIR / f"SUMMARY_all_snp_SHAP_{MODEL_NAME}_{TRAIT}.csv"
-MAPPED_SNP_SHAP_FILE = SHAP_DIR / f"SUMMARY_mapped_snp_SHAP_{MODEL_NAME}_{TRAIT}.csv"
-UNMAPPED_SNP_SHAP_FILE = SHAP_DIR / f"SUMMARY_unmapped_snp_SHAP_{MODEL_NAME}_{TRAIT}.csv"
+SHAP_DIR = (
+    Path("02_harvest_date")
+    / "08_shap"
+    / "output"
+    / "Interpretation"
+    / TRAIT
+    / "Aggregated_tables"
+)
 
-# CAMBIA SOLO SE IL TUO FILE HA NOME DIVERSO
-SNP_INFO_FILE = BASE_DIR / "SNP_info_modeling_var_gt0.csv"
+ALL_SNP_SHAP_FILE = (
+    SHAP_DIR
+    / f"SUMMARY_all_snp_SHAP_{MODEL_NAME}_{TRAIT}.csv"
+)
+
+MAPPED_SNP_SHAP_FILE = (
+    SHAP_DIR
+    / f"SUMMARY_mapped_snp_SHAP_{MODEL_NAME}_{TRAIT}.csv"
+)
+
+UNMAPPED_SNP_SHAP_FILE = (
+    SHAP_DIR
+    / f"SUMMARY_unmapped_snp_SHAP_{MODEL_NAME}_{TRAIT}.csv"
+)
+
+SNP_INFO_FILE = (
+    Path("01_common_genomic_preprocessing")
+    / "output"
+    / "SNP_info_modeling_var_gt0.csv"
+)
 
 SAVE_FILE = REGION_OUT_DIR / f"snp_table_for_regions_{MODEL_NAME}_{TRAIT}.csv"
 REPORT_FILE = REGION_OUT_DIR / "R0_prepare_region_inputs_report.txt"
