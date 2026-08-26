@@ -1,28 +1,28 @@
 # ===============================
 # A1_data_audit.R
-# Audit iniziale dei dati
+# Initial data audit
 # ===============================
 
-rm(list = ls()) # questo comando pulisce l'ambiente di lavoro R, così altre variabili non interferiscono
+rm(list = ls()) 
 
-cat("=== STEP A1: DATA AUDIT ===\n\n") # stampa nel terminale la scritta
+cat("=== STEP A1: DATA AUDIT ===\n\n") 
 
 # -------------------------------
 # 1. Pacchetti
 # -------------------------------
-required_packages <- c("readxl", "snpStats") # crea una lista di pacchetti che ci servono, readx1 serve per leggere file Excel .xlsx, snpStats serve per leggere i file PLINK
+required_packages <- c("readxl", "snpStats")
 
 for (pkg in required_packages) {
   if (!requireNamespace(pkg, quietly = TRUE)) {
     install.packages(pkg, repos = "https://cloud.r-project.org")
   }
-} # controlla ogni pacchetto se è stato installato, se non lo è lo installa
+}
 
-library(readxl) # carica i pacchetti in memoria, così possiamo usare le loro funzioni
-library(snpStats) # # carica i pacchetti in memoria, così possiamo usare le loro funzioni
+library(readxl)
+library(snpStats)
 
 # -------------------------------
-# 2. Percorsi file
+# 2. File paths
 # -------------------------------
 pheno_file <- "data/raw/phenotype/Pheno_raw.xlsx"
 weather_file <- "data/raw/environment/Weather_raw.xlsx"
@@ -33,9 +33,9 @@ bim_file <- "data/raw/genotype/SNPs_final_2022.bim"
 fam_file <- "data/raw/genotype/SNPs_final_2022.fam"
 
 # -------------------------------
-# 3. Controllo esistenza file: per ogni file controlla se esiste davvero
+# 3. File existence check: For each file, it checks whether it actually exists
 # -------------------------------
-files_to_check <- c(pheno_file, weather_file, soil_file, bed_file, bim_file, fam_file) # questa lista resitituisce TRUE se il file c'è, se no FALSE
+files_to_check <- c(pheno_file, weather_file, soil_file, bed_file, bim_file, fam_file) # This list returns TRUE if the file exists; otherwise, it returns FALSE
 
 cat("Controllo file presenti:\n")
 for (f in files_to_check) {
@@ -44,27 +44,27 @@ for (f in files_to_check) {
 cat("\n")
 
 # -------------------------------
-# 4. Caricamento dati
+# 4. Loading data
 # -------------------------------
-cat("Caricamento file fenotipico...\n") # legge il file Excel del fenotipo e lo trasforma in dataframe
+cat("Caricamento file fenotipico...\n")
 pheno <- read_xlsx(pheno_file)
 pheno <- as.data.frame(pheno)
 
-cat("Caricamento file meteo...\n") # legge il file meteo
+cat("Caricamento file meteo...\n")
 weather <- read_xlsx(weather_file)
 weather <- as.data.frame(weather)
 
-cat("Caricamento file suolo...\n") # legge il file suolo
+cat("Caricamento file suolo...\n")
 soil <- read_xlsx(soil_file)
 soil <- as.data.frame(soil)
 
-cat("Caricamento file genomici PLINK...\n") # legge i tre file PLINK e li mette in un oggetto R
-geno <- read.plink(bed_file, bim_file, fam_file) # geno contiene geno$fam = info sugli individui, geno$map = info sugli SNPs, geno$genotypes = matrice dei genotipi
+cat("Caricamento file genomici PLINK...\n")
+geno <- read.plink(bed_file, bim_file, fam_file) # geno contains geno$fam = information about individuals, geno$map = information about SNPs, geno$genotypes = genotype matrix
 
 cat("Caricamento completato.\n\n")
 
 # -------------------------------
-# 5. Dimensioni dei dataset
+# 5. Dataset sizes
 # -------------------------------
 cat("=== DIMENSIONI DATASET ===\n")
 cat("Pheno_raw:", nrow(pheno), "righe x", ncol(pheno), "colonne\n")
@@ -74,7 +74,7 @@ cat("Genotype .fam:", nrow(geno$fam), "individui\n")
 cat("Genotype .map:", nrow(geno$map), "SNP\n\n")
 
 # -------------------------------
-# 6. Nomi colonne
+# 6. Column Names
 # -------------------------------
 cat("=== COLONNE PHENO ===\n")
 print(colnames(pheno))
@@ -89,7 +89,7 @@ print(colnames(soil))
 cat("\n")
 
 cat("=== COLONNE FAM ===\n")
-print(colnames(geno$fam)) # per capire come sono chiamati gli ID nel file genomico
+print(colnames(geno$fam)) # to understand how IDs are named in the genomic file
 cat("\n")
 
 cat("=== PRIME RIGHE FAM ===\n")
@@ -97,16 +97,16 @@ print(head(geno$fam))
 cat("\n")
 
 # -------------------------------
-# 7. Controlli base sul fenotipo
+# 7. Basic Phenotype Assessments
 # -------------------------------
 cat("=== CONTROLLI FENOTIPICI BASE ===\n")
-# righe 104, 105 sono per controllare se esiste la colonna Genotype: se sì prende tutti i valori della colonna, elimina i duplicati con unique() e conta quanti genotipi diversi ci sono
+# Lines 104 and 105 check whether the “Genotype” column exists: if it does, they retrieve all the values in the column, remove duplicates using `unique()`, and count how many different genotypes there are
 if ("Genotype" %in% colnames(pheno)) {
   cat("Genotipi unici nel fenotipo:", length(unique(pheno$Genotype)), "\n")
 } else {
   cat("ATTENZIONE: colonna 'Genotype' non trovata nel fenotipo.\n")
 }
-# prossime righe controllano se esiste la colonna Envir, se sì conta quanti environment unici ci sono, li stampa ordinati
+# The following lines check whether the “Envir” column exists; if so, they count how many unique environments there are and print them in sorted order
 if ("Envir" %in% colnames(pheno)) {
   cat("Environment unici nel fenotipo:", length(unique(pheno$Envir)), "\n")
   cat("Valori Envir:\n")
@@ -117,7 +117,7 @@ if ("Envir" %in% colnames(pheno)) {
 cat("\n")
 
 # -------------------------------
-# 8. Match fenotipo-genotipo
+# 8. Phenotype-Genotype Match
 # -------------------------------
 cat("=== MATCH FENOTIPO vs GENOTIPO ===\n")
 
@@ -131,7 +131,7 @@ if ("Genotype" %in% colnames(pheno)) {
     fam_ids <- unique(as.character(geno$fam[[fc]]))
     n_match <- sum(pheno_ids %in% fam_ids)
     cat("Match con colonna fam$", fc, ":", n_match, "su", length(pheno_ids), "\n")
-  } # Per ogni colonna del .fam: prende tutti i valori unici di quella colonna, controlla quanti genotipi del fenotipo compaiono anche lì, stampa il numero di match
+  } # For each column in the .fam file: it takes all the unique values in that column, checks how many genotypes of that phenotype also appear there, and prints the number of matches
   
 } else {
   cat("Impossibile fare il match: colonna 'Genotype' assente.\n")
@@ -139,15 +139,15 @@ if ("Genotype" %in% colnames(pheno)) {
 cat("\n")
 
 # -------------------------------
-# 9. Missing values nel fenotipo
+# 9. Missing values in the phenotype
 # -------------------------------
 cat("=== MISSING VALUES PHENO ===\n")
-missing_counts <- colSums(is.na(pheno)) # Conta quanti valori mancanti ci sono in ogni colonna del fenotipo. is.na(pheno) crea una tabella di TRUE/FALSE. colSums(...) conta quanti TRUE ci sono in ogni colonna. Quindi ottieni il numero di valori mancanti per colonna.
+missing_counts <- colSums(is.na(pheno)) # Count how many missing values there are in each column of the phenotype. is.na(pheno) creates a table of TRUE/FALSE values. colSums(...) counts how many TRUE values there are in each column. This gives you the number of missing values per column.
 print(missing_counts)
 cat("\n")
 
 # -------------------------------
-# 10. Salvataggio report semplice
+# 10. Save report
 # -------------------------------
 outdir <- "02_harvest_date/01_data_audit/output"
 dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
@@ -193,6 +193,6 @@ cat("MISSING VALUES PHENO\n")
 print(missing_counts)
 cat("\n")
 
-sink() # Chiude il salvataggio nel file e torna a stampare normalmente nel terminale
+sink()
 
-cat("Report salvato in Output/audit_report.txt\n") # Ti avvisa che il report è stato salvato
+cat("Report salvato in Output/audit_report.txt\n")
