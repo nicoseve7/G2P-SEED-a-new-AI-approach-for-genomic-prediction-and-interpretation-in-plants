@@ -43,9 +43,9 @@ GA_DIR = (
 GA_DIR.mkdir(parents=True, exist_ok=True)
 
 ALL_GENO_FILE = (
-    Path("data")
-    / "raw"
-    / "genotype"
+    Path("02_harvest_date")
+    / "05_gradient_boosting"
+    / "output"
     / "all.geno"
 )
 
