@@ -1,6 +1,6 @@
 # ==================================================
 # C3_build_genomic_PCs_paper_style.R
-# PCA genomiche paper-inspired con GDS + LD pruning + KING + PCAir
+# Genomic PCA paper-inspired with GDS + LD pruning + KING + PCAir
 # ==================================================
 
 rm(list = ls())
@@ -14,7 +14,7 @@ library(readr)
 library(dplyr)
 
 # -------------------------------
-# 1. Percorsi file
+# 1. File paths
 # -------------------------------
 bed_file <- "data/raw/genotype/SNPs_final_2022.bed"
 bim_file <- "data/raw/genotype/SNPs_final_2022.bim"
@@ -26,14 +26,14 @@ dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
 gds_file <- file.path(outdir, "SNPs_final_2022.gds")
 
 # -------------------------------
-# 2. Parametri paper-inspired
+# 2. Parameters paper-inspired
 # -------------------------------
 LD_threshold <- 0.975
 MAF_threshold <- 0.02
 n_pcs_to_save <- 20
 
 # -------------------------------
-# 3. Conversione BED -> GDS
+# 3. BED -> GDS
 # -------------------------------
 cat("Conversione BED/BIM/FAM in GDS...\n")
 
@@ -50,7 +50,7 @@ if (!file.exists(gds_file)) {
 }
 
 # -------------------------------
-# 4. Apertura GDS
+# 4. GDS
 # -------------------------------
 cat("Apertura GDS...\n")
 gds <- seqOpen(gds_file)
@@ -77,7 +77,7 @@ snpset <- unlist(unname(snpset))
 
 cat("Numero SNP dopo LD pruning:", length(snpset), "\n\n")
 
-# Applica filtro nel GDS
+# Apply filter in GDS
 seqSetFilter(gds, variant.id = snpset)
 
 # -------------------------------
@@ -113,27 +113,27 @@ pcair_obj <- pcair(
 cat("PCAir completata.\n\n")
 
 # -------------------------------
-# 8. Estrazione PC
+# 8. Estraction PC
 # -------------------------------
 pc_mat <- as.data.frame(pcair_obj$vectors)
 
-# assicura che gli ID dei genotipi siano una colonna esplicita
+# Ensure that genotype IDs are an explicit column
 pc_mat$Genotype <- rownames(pc_mat)
 
-# individua quante componenti ci sono davvero
+# Determine how many components there actually are
 n_pc_available <- ncol(pc_mat) - 1
 n_pc_keep <- min(n_pcs_to_save, n_pc_available)
 
-# tieni solo le prime n componenti + Genotype
+# Keep only the first n elements + Genotype
 pc_df <- pc_mat[, c("Genotype", colnames(pc_mat)[1:n_pc_keep]), drop = FALSE]
 
-# rinomina le colonne delle componenti in PC1, PC2, ...
+# Rename the columns of the components to PC1, PC2, ...
 colnames(pc_df) <- c("Genotype", paste0("PC", seq_len(n_pc_keep)))
 
 # -------------------------------
-# 9. Varianza spiegata
+# 9. Explained variance
 # -------------------------------
-# In GENESIS/PCAir gli autovalori sono in values
+# In GENESIS/PCAir eigenvalues are in values
 eigenvals <- pcair_obj$values
 pve <- eigenvals / sum(eigenvals)
 
@@ -143,7 +143,7 @@ pve_df <- data.frame(
 )
 
 # -------------------------------
-# 10. Controlli output
+# 10. Controls output
 # -------------------------------
 cat("Numero genotipi con PC:", nrow(pc_df), "\n")
 cat("Numero PC salvate:", n_pc_keep, "\n\n")
@@ -157,7 +157,7 @@ print(head(pve_df, 10))
 cat("\n")
 
 # -------------------------------
-# 11. Salvataggio output
+# 11. Save output
 # -------------------------------
 write_csv(pc_df, file.path(outdir, "genomic_PCs_20_paper_style.csv"))
 write_csv(pve_df, file.path(outdir, "genomic_PCs_variance_explained_paper_style.csv"))
@@ -182,12 +182,12 @@ cat("\n")
 sink()
 
 # -------------------------------
-# 12. Chiusura GDS
+# 12. Close GDS
 # -------------------------------
 seqClose(gds)
 
 # -------------------------------
-# 13. Fine
+# 13. End
 # -------------------------------
 cat("File salvati:\n")
 cat("- ", file.path(outdir, "SNPs_final_2022.gds"), "\n")
