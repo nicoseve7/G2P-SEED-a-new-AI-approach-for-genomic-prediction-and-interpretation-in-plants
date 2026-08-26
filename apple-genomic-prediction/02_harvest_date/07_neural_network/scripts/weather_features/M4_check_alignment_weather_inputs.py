@@ -15,15 +15,23 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+OUT_DIR = (
+    Path("02_harvest_date")
+    / "07_neural_network"
+    / "output"
+    / "weather_features"
+)
 
-BASE_DIR = Path(".")
-INPUT_BASE = BASE_DIR / "Input" / "base_files"
-OUT_DIR = BASE_DIR / "Output" / "numpy_arrays_weather_exp"
-REPORT_DIR = BASE_DIR / "Output" / "diagnostics"
-
+REPORT_DIR = OUT_DIR / "diagnostics"
 REPORT_DIR.mkdir(parents=True, exist_ok=True)
 
-META_FILE = INPUT_BASE / "sample_metadata_harvest.csv"
+META_FILE = (
+    Path("02_harvest_date")
+    / "06_deep_learning_baseline"
+    / "output"
+    / "numpy_arrays_harvest"
+    / "sample_metadata_harvest.csv"
+)
 
 VERSIONS = ["v2", "v3"]
 
