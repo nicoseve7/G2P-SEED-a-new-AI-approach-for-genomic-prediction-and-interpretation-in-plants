@@ -15,13 +15,15 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
+OUT_DIR = (
+    Path("02_harvest_date")
+    / "07_neural_network"
+    / "output"
+    / "weather_features"
+)
 
-BASE_DIR = Path(".")
-OUT_DIR = BASE_DIR / "Output" / "numpy_arrays_weather_exp"
-REPORT_DIR = BASE_DIR / "Output" / "diagnostics"
-
+REPORT_DIR = OUT_DIR / "diagnostics"
 REPORT_DIR.mkdir(parents=True, exist_ok=True)
-
 
 def describe_version(version: str):
     npy_file = OUT_DIR / f"weather_period_features_{version}.npy"
