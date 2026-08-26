@@ -18,8 +18,13 @@
 from pathlib import Path
 import pandas as pd
 
-
-RUN_DIR = Path("Output/04_ga_runs/G2B_no_soil_multiseed_variable_split_inner3cv")
+RUN_DIR = (
+    Path("02_harvest_date")
+    / "09_genetic_algorithm"
+    / "output"
+    / "04_ga_runs"
+    / "G2B_no_soil_multiseed_variable_split_inner3cv"
+)
 
 REGION_STABILITY_FILE = RUN_DIR / "G2B_region_stability_across_seeds.csv"
 SELECTED_REGIONS_LONG_FILE = RUN_DIR / "G2B_selected_regions_all_seeds_long.csv"
