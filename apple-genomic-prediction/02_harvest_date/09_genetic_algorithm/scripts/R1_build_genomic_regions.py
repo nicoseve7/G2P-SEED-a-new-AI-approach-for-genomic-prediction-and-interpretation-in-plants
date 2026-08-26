@@ -24,12 +24,23 @@ import numpy as np
 TRAIT = "Harvest_date"
 MODEL_NAME = "paper4branches_bio_geni_relu_concathidden_dropout_meteoexp_v3"
 
-PROJECT_DIR = Path(".")
-INPUT_DIR = PROJECT_DIR / "Input"
-OUTPUT_DIR = PROJECT_DIR / "Output"
+GA_ROOT = (
+    Path("02_harvest_date")
+    / "09_genetic_algorithm"
+)
 
-REGION_IN_DIR = OUTPUT_DIR / "00_regioni"
-REGION_OUT_DIR = OUTPUT_DIR / "00_regioni"
+OUTPUT_DIR = GA_ROOT / "output"
+
+REGION_IN_DIR = (
+    OUTPUT_DIR
+    / "00_region_membership"
+)
+
+REGION_OUT_DIR = (
+    OUTPUT_DIR
+    / "00_region_membership"
+)
+
 REGION_OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 SNP_TABLE_FILE = REGION_IN_DIR / f"snp_table_for_regions_{MODEL_NAME}_{TRAIT}.csv"
