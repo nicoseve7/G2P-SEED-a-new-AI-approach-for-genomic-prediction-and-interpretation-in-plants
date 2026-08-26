@@ -50,12 +50,12 @@ GA_INPUT_DIR = (
 REGION_STABILITY_FILE = RUN_DIR / "G2B_region_stability_across_seeds_with_unique_snps.csv"
 SNP_METADATA_FILE = GA_INPUT_DIR / "snp_metadata_top1000_regions_50kb_Harvest_date.csv"
 
-# Cambia questo path se il GFF3 è in un'altra posizione.
-# Possibili alternative:
-# GFF3_FILE = Path("../Output/gene_models_20170612.gff3")
-# GFF3_FILE = Path("../Input/gene_models_20170612.gff3")
-# GFF3_FILE = Path("Input/base_files/gene_models_20170612.gff3")
-GFF3_FILE = Path("Input/base_files/gene_models_20170612.gff3")
+GFF3_FILE = (
+    Path("data")
+    / "raw"
+    / "annotation"
+    / "gene_models_20170612.gff3"
+)
 
 OUT_FILE = RUN_DIR / "G2B_region_stability_across_seeds_with_unique_snps_and_genes_10kb.csv"
 SNP_GENE_MAP_OUT = RUN_DIR / "G2B_selected_snp_to_gene_map_10kb.csv"
