@@ -12,11 +12,25 @@ cat("=== M2: REPORT WEATHER FEATURES ===\n\n")
 library(readr)
 library(dplyr)
 
-v2_file <- "Input/derived/weather_period_features_v2.csv"
-v3_file <- "Input/derived/weather_period_features_v3_splitP2.csv"
+outdir <- "02_harvest_date/07_neural_network/output/weather_features"
+report_dir <- file.path(outdir, "reports")
 
-report_file <- "Output/reports/weather_features_comparison_report.txt"
-dir.create("Output/reports", recursive = TRUE, showWarnings = FALSE)
+dir.create(report_dir, recursive = TRUE, showWarnings = FALSE)
+
+v2_file <- file.path(
+  outdir,
+  "weather_period_features_v2.csv"
+)
+
+v3_file <- file.path(
+  outdir,
+  "weather_period_features_v3_splitP2.csv"
+)
+
+report_file <- file.path(
+  report_dir,
+  "weather_features_comparison_report.txt"
+)
 
 cat("Caricamento file derivati...\n")
 v2 <- read_csv(v2_file, show_col_types = FALSE)
