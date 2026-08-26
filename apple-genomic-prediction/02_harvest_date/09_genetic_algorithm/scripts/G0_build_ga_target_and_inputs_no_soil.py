@@ -67,9 +67,10 @@ TOP_REGIONS_FILE = RANK_DIR / f"top{TOP_K}_regions_by_region_score_{WINDOW_LABEL
 
 # Use original static SNP-region membership.
 # This file does not depend on full/no-soil SHAP.
-REGION_MEMBERSHIP_FILE = Path(
-    "../regioni_ga_harvest/Output/00_regioni/"
-    f"region_snp_membership_{WINDOW_LABEL}_{TRAIT}.csv"
+REGION_MEMBERSHIP_FILE = (
+    OUTPUT_DIR
+    / "00_region_membership"
+    / f"region_snp_membership_{WINDOW_LABEL}_{TRAIT}.csv"
 )
 
 SAVE_TARGET = GA_DIR / f"y_mean_adjusted_by_genotype_{TRAIT}.csv"
