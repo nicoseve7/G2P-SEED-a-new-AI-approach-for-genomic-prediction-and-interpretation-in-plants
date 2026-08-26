@@ -23,19 +23,44 @@ TRAIT = "Harvest_date"
 TOP_K = 1000
 WINDOW_LABEL = "50kb"
 
-PROJECT_DIR = Path(".")
-INPUT_DIR = PROJECT_DIR / "Input"
-OUTPUT_DIR = PROJECT_DIR / "Output"
+GA_ROOT = (
+    Path("02_harvest_date")
+    / "09_genetic_algorithm"
+)
 
-BASE_DIR = INPUT_DIR / "base_files"
-RANK_DIR = OUTPUT_DIR / "02_regioni_ranked"
-GA_DIR = OUTPUT_DIR / "03_ga_inputs"
+OUTPUT_DIR = GA_ROOT / "output"
+
+RANK_DIR = (
+    OUTPUT_DIR
+    / "02_regioni_ranked"
+)
+
+GA_DIR = (
+    OUTPUT_DIR
+    / "03_ga_inputs"
+)
+
 GA_DIR.mkdir(parents=True, exist_ok=True)
 
-# Base files copied from the original GA project
-ALL_GENO_FILE = BASE_DIR / "all.geno"
-PCA_FILE = BASE_DIR / "genomic_PCs_20_paper_style.csv"
-ADJ_FILE = BASE_DIR / "harvestdate_adjusted_values_genotype.csv"
+ALL_GENO_FILE = (
+    Path("data")
+    / "raw"
+    / "genotype"
+    / "all.geno"
+)
+
+PCA_FILE = (
+    Path("01_common_genomic_preprocessing")
+    / "output"
+    / "genomic_PCs_20_paper_style.csv"
+)
+
+ADJ_FILE = (
+    Path("02_harvest_date")
+    / "02_phenotype_preprocessing"
+    / "output"
+    / "harvestdate_adjusted_values_genotype.csv"
+)
 
 # No-soil top1000 regions created by R3 no-soil
 TOP_REGIONS_FILE = RANK_DIR / f"top{TOP_K}_regions_by_region_score_{WINDOW_LABEL}_{TRAIT}.csv"
