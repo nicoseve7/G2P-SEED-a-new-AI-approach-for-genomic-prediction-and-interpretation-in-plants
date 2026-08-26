@@ -10,18 +10,37 @@ import pandas as pd
 
 TRAIT = "Harvest_date"
 
-OUT_DIR = Path("Output")
-DICT_DIR = OUT_DIR / "Interpretation" / TRAIT / "Feature_dictionaries"
-DICT_DIR.mkdir(parents=True, exist_ok=True)
-
-# FILE REALI CHE HAI GIÀ
-WEATHER_COLUMNS_FILE = Path(
-    "../esperimento_meteo/Output/numpy_arrays_weather_exp/weather_period_features_v3_columns.csv"
+OUT_DIR = (
+    Path("02_harvest_date")
+    / "08_shap"
+    / "output"
 )
 
-# opzionale, solo per controllo
-WEATHER_ALIGNED_FILE = Path(
-    "../esperimento_meteo/Output/numpy_arrays_weather_exp/weather_period_features_v3_aligned.csv"
+NN_OUT_DIR = (
+    Path("02_harvest_date")
+    / "07_neural_network"
+    / "output"
+)
+
+DICT_DIR = (
+    OUT_DIR
+    / "Interpretation"
+    / TRAIT
+    / "Feature_dictionaries"
+)
+
+DICT_DIR.mkdir(parents=True, exist_ok=True)
+
+WEATHER_COLUMNS_FILE = (
+    NN_OUT_DIR
+    / "weather_features"
+    / "weather_period_features_v3_columns.csv"
+)
+
+WEATHER_ALIGNED_FILE = (
+    NN_OUT_DIR
+    / "weather_features"
+    / "weather_period_features_v3_aligned.csv"
 )
 
 SAVE_FILE = DICT_DIR / "weather_v3_feature_dictionary.csv"
