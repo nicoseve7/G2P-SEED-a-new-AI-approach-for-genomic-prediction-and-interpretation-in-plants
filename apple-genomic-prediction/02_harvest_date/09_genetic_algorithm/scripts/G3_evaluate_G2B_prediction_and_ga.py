@@ -43,7 +43,13 @@ warnings.filterwarnings("ignore")
 # CONFIG
 # =============================================================================
 
-RUN_DIR = Path("Output/04_ga_runs/G2B_no_soil_multiseed_variable_split_inner3cv")
+RUN_DIR = (
+    Path("02_harvest_date")
+    / "09_genetic_algorithm"
+    / "output"
+    / "04_ga_runs"
+    / "G2B_no_soil_multiseed_variable_split_inner3cv"
+)
 FIG_DIR = RUN_DIR / "figures_G3"
 TABLE_DIR = RUN_DIR / "tables_G3"
 
