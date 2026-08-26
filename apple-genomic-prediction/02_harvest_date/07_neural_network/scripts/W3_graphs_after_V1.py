@@ -11,7 +11,11 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 
-OUT_DIR = Path("Output")
+OUT_DIR = (
+    Path("02_harvest_date")
+    / "07_neural_network"
+    / "output"
+)
 
 METRICS_FILE = OUT_DIR / "metrics" / "metrics_Harvest_date_paper4branches_bio_geni_relu_concathidden_dropout_meteoexp_v3_no_soil.csv"
 PRED_FILE = OUT_DIR / "predictions" / "predictions_Harvest_date_paper4branches_bio_geni_relu_concathidden_dropout_meteoexp_v3_no_soil_all_splits.csv"
