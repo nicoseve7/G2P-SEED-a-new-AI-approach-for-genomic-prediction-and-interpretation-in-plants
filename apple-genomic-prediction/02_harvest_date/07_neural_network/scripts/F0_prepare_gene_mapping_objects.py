@@ -9,25 +9,48 @@ from pathlib import Path
 import pandas as pd
 import numpy as np
 
-
 TRAIT = "Harvest_date"
 MAP_TOLERANCE_BP = 3000
 
-GENO_DIR = Path(f"../Output/Intermediate/geno_files/{TRAIT}")
-VCF_FILE = Path("Input/SNPS_final2022.vcf")
+GENO_DIR = (
+    Path("02_harvest_date")
+    / "05_gradient_boosting"
+    / "output"
+    / "geno_files"
+    / TRAIT
+)
 
-GFF3_FILE = Path("Input/annotation/gene_models_20170612.gff3")
-SWISSPROT_FILE = Path("Input/annotation/Malus_x_domestica_GDDH13_v1.1_vs_swissprot.xlsx")
+VCF_FILE = (
+    Path("data")
+    / "raw"
+    / "genotype"
+    / "SNPS_final2022.vcf"
+)
 
-OUT_DIR = Path("Output")
+GFF3_FILE = (
+    Path("data")
+    / "raw"
+    / "annotation"
+    / "gene_models_20170612.gff3"
+)
+
+SWISSPROT_FILE = (
+    Path("data")
+    / "raw"
+    / "annotation"
+    / "Malus_x_domestica_GDDH13_v1.1_vs_swissprot.xlsx"
+)
+
+OUT_DIR = (
+    Path("02_harvest_date")
+    / "07_neural_network"
+    / "output"
+)
+
 BIO_DIR = OUT_DIR / "biologic_objects"
 
 SNP_GENE_DIR = BIO_DIR / "snp_gene_mapping"
 REPORT_DIR = BIO_DIR / "reports"
-
-SNP_GENE_DIR.mkdir(parents=True, exist_ok=True)
-REPORT_DIR.mkdir(parents=True, exist_ok=True)
-
 
 def normalize_chrom_name(chrom):
     chrom = str(chrom).strip()
