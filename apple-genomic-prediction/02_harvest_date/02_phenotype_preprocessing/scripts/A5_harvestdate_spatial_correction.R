@@ -1,6 +1,6 @@
 # ==================================================
 # A5_harvestdate_spatial_correction.R
-# Correzione spaziale di Harvest_date con SpATS
+# Spatial Correction of Harvest_date Using SpATS
 # ==================================================
 
 rm(list = ls())
@@ -13,7 +13,7 @@ library(SpATS)
 library(dplyr)
 
 # -------------------------------
-# 1. Percorsi file
+# 1. File paths
 # -------------------------------
 pheno_file <- "data/raw/phenotype/Pheno_raw.xlsx"
 bed_file <- "data/raw/genotype/SNPs_final_2022.bed"
@@ -24,7 +24,7 @@ outdir <- "02_harvest_date/02_phenotype_preprocessing/output"
 dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
 
 # -------------------------------
-# 2. Caricamento dati
+# 2. Loading data
 # -------------------------------
 cat("Caricamento fenotipo...\n")
 pheno <- as.data.frame(read_xlsx(pheno_file))
@@ -35,23 +35,23 @@ geno <- read.plink(bed_file, bim_file, fam_file)
 cat("Caricamento completato.\n\n")
 
 # -------------------------------
-# 3. Teniamo solo colonne utili
+# 3. Let's keep only the useful columns
 # -------------------------------
 d <- pheno[, c("Row", "Position", "Genotype", "Management", "Checks",
                "Year", "Country", "Envir", "Harvest_date")]
 colnames(d)[ncol(d)] <- "Trait"
 
 # -------------------------------
-# 4. Filtro per genotipi con genomica
+# 4. Filter by genotype using genomic data
 # -------------------------------
 geno_ids <- as.character(geno$fam$member)
-d <- d[which(as.character(d$Genotype) %in% geno_ids), ] # tengo genotipi con genomica
+d <- d[which(as.character(d$Genotype) %in% geno_ids), ]
 
 cat("Numero righe dopo filtro genomico:", nrow(d), "\n")
 cat("Numero genotipi unici dopo filtro genomico:", length(unique(d$Genotype)), "\n\n")
 
 # -------------------------------
-# 5. Inizializzazione output
+# 5. Output Initialization
 # -------------------------------
 trees_all <- NULL
 means_all <- NULL
@@ -59,7 +59,7 @@ means_all <- NULL
 env_list <- sort(unique(d$Envir))
 
 # -------------------------------
-# 6. Loop sugli environment (Faccio un environment alla volta: BEL.2018, BEL.2019, ..., ITA.2022. Perchè il paper corregge la spatial heterogeneity separatamente in ogni environment)
+# 6. Loop through the environments (I’ll go through one environment at a time: BEL.2018, BEL.2019, ..., ITA.2022. Because the paper corrects for spatial heterogeneity separately in each environment)
 # -------------------------------
 for (env in env_list) {
   
@@ -67,36 +67,34 @@ for (env in env_list) {
   
   data_env <- d[d$Envir == env, ]
   
-  # rimuovi missing del trait
   data_env <- data_env[!is.na(data_env$Trait), ]
   
-  # se troppo pochi dati, salta
   if (nrow(data_env) < 10 || length(unique(data_env$Genotype)) < 2) {
     cat("  -> saltato: dati insufficienti\n")
     next
   }
   
-  # prepara coordinate spaziali (uso Row e Position e le trasformo in coordinate numeriche e fattori; questo permette a SpATS di modellare la struttua spaziale del campo)
+  # Prepare spatial coordinates (I use Row and Position and convert them into numerical coordinates and factors; this allows SpATS to model the spatial structure of the field)
   data_env$column <- as.numeric(data_env$Row)
   data_env$row <- as.numeric(data_env$Position)
   data_env$C <- as.factor(data_env$column)
   data_env$R <- as.factor(data_env$row)
   data_env$Genotype <- as.factor(as.character(data_env$Genotype))
   
-  # ordina per posizione
+  # Sort by position
   data_env <- data_env[order(data_env$Row, data_env$Position), ]
   
-  # dataframe base per output tree-level
+  # Base data frame for tree-level output
   trees_env <- data_env[, c("Row", "Position", "Genotype", "Management",
                             "Checks", "Year", "Country", "Envir")]
   
-  # dataframe base per output genotype-level
+  # Base data frame for genotype-level output
   means_env <- data.frame(
     Genotype = as.character(unique(data_env$Genotype)),
     stringsAsFactors = FALSE
   )
   
-  # modello spaziale SpATS: qui il software cerca una superficie spaziale che descriva l'andamento del fenotipo nel campo e in parallelo tiene conto dei genotipi
+  # SpATS spatial model: Here, the software searches for a spatial surface that describes the phenotypic pattern in the field while simultaneously taking genotypes into account
   spatial_formula <- as.formula(~ PSANOVA(column, row))
   
   fit <- try(
@@ -119,7 +117,7 @@ for (env in env_list) {
   }
   
   # -------------------------------
-  # 6A. Valori aggiustati per genotipo
+  # 6A. Genotype-Adjusted Values
   # -------------------------------
   pred_gen <- predict(fit, which = "Genotype")
   pred_gen <- pred_gen[, c("Genotype", "predicted.values")]
@@ -129,7 +127,7 @@ for (env in env_list) {
   means_env$Envir <- env
   
   # -------------------------------
-  # 6B. Valori aggiustati per tree
+  # 6B. Values adjusted by tree
   # -------------------------------
   d_fit <- fit$data
   d_fit$weights <- NULL
@@ -141,24 +139,24 @@ for (env in env_list) {
   
   d_merge <- merge(d_fit, pred_gen, all.x = TRUE)
   
-  # se il trait originale era missing, tieni NA
+  # If the original trait was missing, keep NA
   d_merge[is.na(d_merge$Trait_original), "Harvest_date_adjusted"] <- NA
   
   # adjusted per tree = predicted genotype + residual
   d_merge$Harvest_date_adjusted_tree <- d_merge$Harvest_date_adjusted + d_merge$residuals
   
-  # riordina
+  # reorder
   d_merge <- d_merge[order(d_merge$Row, d_merge$Position), ]
   
   trees_env$Harvest_date_adjusted_tree <- d_merge$Harvest_date_adjusted_tree
   
-  # salva nell'output complessivo
+  # Save to the overall output
   trees_all <- bind_rows(trees_all, trees_env)
   means_all <- bind_rows(means_all, means_env)
 }
 
 # -------------------------------
-# 7. Salvataggio output
+# 7. Save output
 # -------------------------------
 write.csv(
   trees_all,
@@ -195,7 +193,7 @@ cat("\n")
 sink()
 
 # -------------------------------
-# 8. Stampa finale
+# 8. Final print
 # -------------------------------
 cat("\nFile salvati:\n")
 cat("- ", file.path(outdir, "harvestdate_adjusted_values_trees.csv"), "\n")
