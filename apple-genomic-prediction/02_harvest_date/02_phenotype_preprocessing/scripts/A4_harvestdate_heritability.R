@@ -22,7 +22,7 @@ fam_file <- "data/raw/genotype/SNPs_final_2022.fam"
 outdir <- "02_harvest_date/02_phenotype_preprocessing/output"
 dir.create(outdir, recursive = TRUE, showWarnings = FALSE)
 # -------------------------------
-# 2. Caricamento dati
+# 2. Loading data
 # -------------------------------
 cat("Caricamento fenotipo...\n") # carico file fenotipico
 pheno <- as.data.frame(read_xlsx(pheno_file)) # carico file genomico
@@ -33,13 +33,13 @@ geno <- read.plink(bed_file, bim_file, fam_file)
 cat("Caricamento completato.\n\n")
 
 # -------------------------------
-# 3. Selezione colonne utili (focus Harvest_date)
+# 3. Columns selection (focus Harvest_date)
 # -------------------------------
 d <- pheno[, c("Envir", "Genotype", "Harvest_date")]
 colnames(d)[3] <- "Trait"
 
 # -------------------------------
-# 4. Teniamo solo genotipi con genomica
+# 4. We only keep genotypes with genomic data
 # -------------------------------
 geno_ids <- as.character(geno$fam$member)
 d <- d[which(as.character(d$Genotype) %in% geno_ids), ]
@@ -48,7 +48,7 @@ cat("Numero righe dopo filtro genomico:", nrow(d), "\n")
 cat("Numero genotipi unici dopo filtro genomico:", length(unique(d$Genotype)), "\n\n")
 
 # -------------------------------
-# 5. Calcolo H² per environment
+# 5. H² per environment
 # -------------------------------
 results <- NULL
 
@@ -60,10 +60,10 @@ for (env in env_list) {
   
   d_sub <- subset(d, Envir == env)
   
-  # rimuovi missing del trait
+  # Remove “missing” from the trait
   d_sub <- d_sub[!is.na(d_sub$Trait), ]
   
-  # controlli minimi
+  # minimal checks
   n_obs <- nrow(d_sub)
   n_gen <- length(unique(d_sub$Genotype))
   
@@ -83,11 +83,11 @@ for (env in env_list) {
     next
   }
   
-  # fattori
+  # factors
   d_sub$Genotype <- as.factor(as.character(d_sub$Genotype))
   d_sub$Envir <- as.factor(as.character(d_sub$Envir))
   
-  # modello
+  # model
   fit <- try(lmer(Trait ~ (1 | Genotype), data = d_sub), silent = TRUE)
   
   if (inherits(fit, "try-error")) {
@@ -106,12 +106,12 @@ for (env in env_list) {
     next
   }
   
-  # componenti di varianza
+  # components of variance
   vc <- as.data.frame(VarCorr(fit))
   genov <- vc$vcov[vc$grp == "Genotype"]
   errorv <- sigma(fit)^2
   
-  # repliche medie per genotipo
+  # Average replicates per genotype
   reps_table <- table(d_sub$Genotype)
   mean_reps <- mean(as.numeric(reps_table))
   
@@ -133,7 +133,7 @@ for (env in env_list) {
 }
 
 # -------------------------------
-# 6. Ordinamento risultati
+# 6. Sort Results
 # -------------------------------
 results <- results[order(results$H2, decreasing = TRUE, na.last = TRUE), ]
 
@@ -143,7 +143,7 @@ results <- results[order(results$H2, decreasing = TRUE, na.last = TRUE), ]
 results$low_H2_flag <- ifelse(!is.na(results$H2) & results$H2 < 0.1, TRUE, FALSE)
 
 # -------------------------------
-# 8. Salvataggio output
+# 8. Save output
 # -------------------------------
 write.csv(
   results,
@@ -163,7 +163,7 @@ cat("Numero environment con H2 < 0.1:",
 sink()
 
 # -------------------------------
-# 9. Stampa finale
+# 9. Final print
 # -------------------------------
 cat("\nFile salvati:\n")
 cat("- ", file.path(outdir, "harvestdate_heritability_by_environment.csv"), "\n")
