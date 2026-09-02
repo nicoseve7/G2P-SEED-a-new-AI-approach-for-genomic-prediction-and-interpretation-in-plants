@@ -7,15 +7,6 @@
 ### for:
 ###   - Acidity
 ###   - Color_over
-###
-### Input:
-###   Output/06_ga_runs/G2B_multiseed_ga_newtraits/<TRAIT>/
-###     G2B_region_stability_across_seeds_<TRAIT>.csv
-###     G2B_selected_regions_all_seeds_long_<TRAIT>.csv
-###
-### Output:
-###   Output/06_ga_runs/G2B_multiseed_ga_newtraits/<TRAIT>/
-###     G2B_region_stability_across_seeds_with_unique_snps_<TRAIT>.csv
 ################################################################################
 
 from pathlib import Path
@@ -28,7 +19,13 @@ import pandas as pd
 
 TRAITS = ["Acidity", "Color_over"]
 
-BASE_RUN_DIR = Path("Output/06_ga_runs/G2B_multiseed_ga_newtraits")
+BASE_RUN_DIR = (
+    Path("03_acidity_color_over")
+    / "06_genetic_algorithm"
+    / "output"
+    / "04_ga_runs"
+    / "G2B_multiseed_ga_newtraits"
+)
 
 
 # =============================================================================
