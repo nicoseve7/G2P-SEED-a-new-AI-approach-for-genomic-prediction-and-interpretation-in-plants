@@ -1,0 +1,1155 @@
+# -*- coding: utf-8 -*-
+
+################################################################################
+### Q2_train_no_soil_newtraits.py
+###
+### Train finale sui 25 split della rete V3 SENZA ramo suolo
+### per:
+###   - Acidity
+###   - Color_over
+###
+### Usa i best params prodotti da:
+###   Q1_tune_no_soil_newtraits.py
+###
+### Architettura:
+###   Weather expanded branch
+###   PCA branch
+###   mapped SNP -> gene -> ReLU branch
+###   unmapped SNP -> hidden branch
+###   concatenation -> fusion hidden -> output
+###
+### Da eseguire da:
+###   dalpaper/nuovitrattinosoil/
+################################################################################
+
+import os
+import gc
+import json
+import math
+import random
+from pathlib import Path
+
+import numpy as np
+import pandas as pd
+import tensorflow as tf
+
+from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
+from sklearn.preprocessing import StandardScaler
+
+
+# =============================================================================
+# SETTINGS
+# =============================================================================
+
+TRAITS = ["Acidity", "Color_over"]
+
+MODEL_NAME = "paper4branches_bio_geni_relu_concathidden_dropout_meteoexp_v3_no_soil"
+
+BASE_OUT_DIR = Path("Output/02_no_soil_model")
+
+NPY_BASE_DIR = Path("Output/Intermediate/numpy_arrays_newtraits")
+GENO_BASE_DIR = Path("Output/Intermediate/geno_files")
+BIO_BASE_DIR = Path("Output/biologic_objects")
+
+INNER_SPLITS_FILE = Path("Output/datasets/inner_validation_splits_newtraits.csv")
+
+GLOBAL_SEED = 42
+
+UNMAPPED_HIDDEN_UNITS = 16
+BIO_HIDDEN_UNITS = 8
+
+MAX_EPOCHS = 500
+BATCH_SIZE = 64
+EARLY_STOPPING_PATIENCE = 20
+SCALE_TARGET = True
+
+SAVE_MODELS = True
+
+FALLBACK_PARAMS = {
+    "learning_rate": 0.001,
+    "l2_lambda": 0.0,
+    "fusion_hidden_units": 64,
+    "dropout_rate": 0.2,
+}
+
+
+# =============================================================================
+# BASIC UTILS
+# =============================================================================
+
+def set_all_seeds(seed: int):
+    os.environ["PYTHONHASHSEED"] = str(seed)
+    random.seed(seed)
+    np.random.seed(seed)
+    tf.random.set_seed(seed)
+
+
+def clean_genotype(x):
+    return str(x).replace("G_", "").strip()
+
+
+def pearson_r(y_true: np.ndarray, y_pred: np.ndarray) -> float:
+    y_true = np.asarray(y_true).ravel()
+    y_pred = np.asarray(y_pred).ravel()
+
+    if len(y_true) < 2:
+        return np.nan
+
+    if np.std(y_true) == 0 or np.std(y_pred) == 0:
+        return np.nan
+
+    return float(np.corrcoef(y_true, y_pred)[0, 1])
+
+
+def rmse(y_true, y_pred):
+    return math.sqrt(mean_squared_error(y_true, y_pred))
+
+
+def make_trait_dirs(out_dir: Path):
+    subdirs = [
+        out_dir / "models",
+        out_dir / "predictions",
+        out_dir / "metrics",
+        out_dir / "loss_history",
+        out_dir / "grafici" / "per_split",
+        out_dir / "grafici" / "summary",
+    ]
+
+    for d in subdirs:
+        d.mkdir(parents=True, exist_ok=True)
+
+
+# =============================================================================
+# LOAD TRAIT DATA
+# =============================================================================
+
+def load_inner_splits_for_trait(trait: str, meta: pd.DataFrame):
+    """
+    Legge Output/datasets/inner_validation_splits_newtraits.csv.
+
+    Il file ha colonne trait-specific:
+        Acidity_CV1_Split1_Testing
+        Acidity_CV1_Split1_Validation
+        Acidity_CV1_Split1_Subtrain
+        Acidity_CV1_Split1_role
+
+    Qui vengono rinominate in:
+        CV1_Split1_Testing
+        CV1_Split1_Validation
+        CV1_Split1_Subtrain
+        CV1_Split1_role
+    """
+
+    if not INNER_SPLITS_FILE.exists():
+        raise FileNotFoundError(
+            f"Inner validation split file non trovato:\n{INNER_SPLITS_FILE}\n"
+            "Devi prima eseguire Q0b_create_inner_validation_splits_newtraits.py"
+        )
+
+    inner_all = pd.read_csv(INNER_SPLITS_FILE, low_memory=False)
+
+    required_base = ["Trait", "Envir", "Genotype", "ID_key"]
+    missing_base = [c for c in required_base if c not in inner_all.columns]
+
+    if missing_base:
+        raise ValueError(
+            f"Nel file inner split mancano colonne base: {missing_base}\n"
+            f"Colonne trovate: {inner_all.columns.tolist()[:80]}"
+        )
+
+    inner_all["Trait"] = inner_all["Trait"].astype(str).str.strip()
+    inner_all["Envir"] = inner_all["Envir"].astype(str).str.strip()
+    inner_all["Genotype"] = inner_all["Genotype"].apply(clean_genotype)
+    inner_all["ID_key"] = inner_all["ID_key"].astype(str).str.strip()
+
+    inner_trait = inner_all[inner_all["Trait"] == trait].copy()
+
+    if inner_trait.empty:
+        raise ValueError(
+            f"Nessuna riga trovata nel file inner split per trait={trait}.\n"
+            f"Trait disponibili: {sorted(inner_all['Trait'].dropna().unique().tolist())}"
+        )
+
+    split_cols = []
+    for c in inner_trait.columns:
+        prefix = f"{trait}_"
+        if c.startswith(prefix) and c.endswith("_Testing"):
+            split_name = c.replace(prefix, "").replace("_Testing", "")
+            split_cols.append(split_name)
+
+    split_cols = sorted(
+        split_cols,
+        key=lambda x: (
+            int(x.split("_")[0].replace("CV", "")),
+            int(x.split("_")[1].replace("Split", ""))
+        )
+    )
+
+    if len(split_cols) == 0:
+        raise ValueError(f"Nessuno split trovato per trait={trait} nel file inner.")
+
+    rename_map = {}
+
+    missing_cols = []
+    for split in split_cols:
+        for suffix in ["Testing", "Validation", "Subtrain", "role"]:
+            source_col = f"{trait}_{split}_{suffix}"
+            target_col = f"{split}_{suffix}"
+
+            if source_col not in inner_trait.columns:
+                missing_cols.append(source_col)
+            else:
+                rename_map[source_col] = target_col
+
+    if missing_cols:
+        raise ValueError(
+            f"Nel file inner split mancano colonne trait-specific per {trait}.\n"
+            f"Esempi mancanti: {missing_cols[:30]}"
+        )
+
+    keep_cols = required_base + list(rename_map.keys())
+    inner_trait = inner_trait[keep_cols].rename(columns=rename_map).copy()
+
+    for split in split_cols:
+        for suffix in ["Testing", "Validation", "Subtrain"]:
+            col = f"{split}_{suffix}"
+            inner_trait[col] = pd.to_numeric(inner_trait[col], errors="coerce").fillna(0).astype(int)
+
+        role_col = f"{split}_role"
+        inner_trait[role_col] = inner_trait[role_col].astype(str).str.strip()
+
+    # Controllo: useremo solo le righe del metadata presenti nell'inner file.
+    meta_keys = set(meta["ID_key"].astype(str))
+    inner_keys = set(inner_trait["ID_key"].astype(str))
+
+    missing_from_inner = sorted(meta_keys - inner_keys)
+
+    if len(missing_from_inner) > 0:
+        print(
+            f"[WARNING] {trait}: {len(missing_from_inner)} righe del metadata "
+            "non sono presenti nella CV/inner split e verranno escluse."
+        )
+        print(f"          Esempi: {missing_from_inner[:10]}")
+
+    return inner_trait, split_cols
+
+
+def load_trait_inputs(trait: str):
+    """
+    Carica:
+      - sample metadata
+      - PCA npy
+      - Weather V3 npy
+      - inner split file trait-specific
+
+    Poi filtra metadata/PCA/weather alle sole righe presenti nella CV.
+    """
+
+    trait_npy_dir = NPY_BASE_DIR / trait
+
+    meta_file = trait_npy_dir / f"sample_metadata_{trait}.csv"
+    pca_file = trait_npy_dir / "pca.npy"
+    weather_file = trait_npy_dir / "weather_period_features_v3.npy"
+
+    for f in [meta_file, pca_file, weather_file]:
+        if not f.exists():
+            raise FileNotFoundError(f"File input mancante per {trait}:\n{f}")
+
+    meta_all = pd.read_csv(meta_file)
+    meta_all = meta_all[["Genotype", "Envir", trait]].copy()
+
+    meta_all["Genotype"] = meta_all["Genotype"].apply(clean_genotype)
+    meta_all["Envir"] = meta_all["Envir"].astype(str).str.strip()
+    meta_all[trait] = pd.to_numeric(meta_all[trait], errors="coerce")
+    meta_all["ID_key"] = meta_all["Envir"] + "-" + meta_all["Genotype"]
+    meta_all["_original_row_index"] = np.arange(meta_all.shape[0])
+
+    pca_all = np.load(pca_file).astype("float32")
+    weather_all = np.load(weather_file).astype("float32")
+
+    if pca_all.shape[0] != meta_all.shape[0]:
+        raise ValueError(
+            f"{trait}: pca.npy rows mismatch. "
+            f"meta={meta_all.shape[0]}, pca={pca_all.shape[0]}"
+        )
+
+    if weather_all.shape[0] != meta_all.shape[0]:
+        raise ValueError(
+            f"{trait}: weather npy rows mismatch. "
+            f"meta={meta_all.shape[0]}, weather={weather_all.shape[0]}"
+        )
+
+    inner_trait, split_cols = load_inner_splits_for_trait(trait, meta_all)
+
+    # Teniamo solo righe presenti nel file inner.
+    inner_keys = set(inner_trait["ID_key"].astype(str))
+    meta = meta_all[meta_all["ID_key"].isin(inner_keys)].copy()
+
+    # Riordina meta come appare originariamente.
+    meta = meta.reset_index(drop=True)
+
+    original_idx = meta["_original_row_index"].to_numpy(dtype=int)
+    pca = pca_all[original_idx]
+    weather = weather_all[original_idx]
+
+    # Riordina inner nello stesso ordine del metadata filtrato.
+    inner = (
+        inner_trait
+        .set_index("ID_key")
+        .loc[meta["ID_key"].astype(str)]
+        .reset_index()
+    )
+
+    meta = meta.drop(columns=["_original_row_index"])
+
+    print("\n[LOAD TRAIT INPUTS]")
+    print(f"Trait: {trait}")
+    print(f"  Metadata rows original: {meta_all.shape[0]}")
+    print(f"  Metadata rows aligned:  {meta.shape[0]}")
+    print(f"  Unique genotypes:       {meta['Genotype'].nunique()}")
+    print(f"  Unique environments:    {meta['Envir'].nunique()}")
+    print(f"  PCA shape:              {pca.shape}")
+    print(f"  Weather shape:          {weather.shape}")
+    print(f"  Number of splits:       {len(split_cols)}")
+
+    return meta, inner, split_cols, pca, weather
+
+
+def prepare_split_dataframe(
+    trait: str,
+    meta: pd.DataFrame,
+    inner: pd.DataFrame,
+    split_name: str,
+):
+    geno_file = GENO_BASE_DIR / trait / f"geno_{split_name}.csv"
+
+    if not geno_file.exists():
+        raise FileNotFoundError(f"Geno file mancante:\n{geno_file}")
+
+    Xgeno = pd.read_csv(geno_file)
+
+    first_col = Xgeno.columns[0]
+    Xgeno[first_col] = Xgeno[first_col].apply(clean_genotype)
+    Xgeno = Xgeno.rename(columns={first_col: "Genotype"})
+    Xgeno["Genotype"] = Xgeno["Genotype"].astype(str)
+
+    df = meta.merge(Xgeno, on="Genotype", how="left")
+
+    df["Testing"] = inner[f"{split_name}_Testing"].values
+    df[f"{split_name}_Validation"] = inner[f"{split_name}_Validation"].values
+    df[f"{split_name}_Subtrain"] = inner[f"{split_name}_Subtrain"].values
+    df[f"{split_name}_role"] = inner[f"{split_name}_role"].values
+
+    df["Split"] = split_name
+
+    return df
+
+
+def load_split_objects(trait: str, split_name: str):
+    split_dir = BIO_BASE_DIR / trait / "split_inputs" / split_name
+
+    needed = [
+        split_dir / "mapped_snps.csv",
+        split_dir / "unmapped_snps.csv",
+        split_dir / "all_genes.csv",
+        split_dir / "snp_to_gene_edges.csv",
+    ]
+
+    for f in needed:
+        if not f.exists():
+            raise FileNotFoundError(f"File biologico mancante:\n{f}")
+
+    mapped_snps = pd.read_csv(split_dir / "mapped_snps.csv")["SNP"].astype(str).tolist()
+    unmapped_snps = pd.read_csv(split_dir / "unmapped_snps.csv")["SNP"].astype(str).tolist()
+    all_genes = pd.read_csv(split_dir / "all_genes.csv")["Gene"].astype(str).tolist()
+    snp_to_gene_edges = pd.read_csv(split_dir / "snp_to_gene_edges.csv", dtype=str)
+
+    return {
+        "mapped_snps": mapped_snps,
+        "unmapped_snps": unmapped_snps,
+        "all_genes": all_genes,
+        "snp_to_gene_edges": snp_to_gene_edges,
+    }
+
+
+# =============================================================================
+# BIOLOGICAL MASK
+# =============================================================================
+
+def build_sparse_weight_matrix(input_names, output_names, edge_df, input_col, output_col):
+    input_to_idx = {x: i for i, x in enumerate(input_names)}
+    output_to_idx = {x: i for i, x in enumerate(output_names)}
+
+    mat = np.zeros((len(input_names), len(output_names)), dtype=np.float32)
+
+    for _, row in edge_df.iterrows():
+        inp = str(row[input_col])
+        out = str(row[output_col])
+
+        if inp in input_to_idx and out in output_to_idx:
+            mat[input_to_idx[inp], output_to_idx[out]] = 1.0
+
+    return mat
+
+
+@tf.keras.utils.register_keras_serializable(package="Custom")
+class MaskedDense(tf.keras.layers.Layer):
+    def __init__(
+        self,
+        units,
+        mask_matrix,
+        activation=None,
+        kernel_regularizer=None,
+        **kwargs
+    ):
+        super().__init__(**kwargs)
+        self.units = units
+        self.mask_matrix_np = np.array(mask_matrix, dtype=np.float32)
+        self.mask_matrix = tf.constant(self.mask_matrix_np, dtype=tf.float32)
+        self.activation = tf.keras.activations.get(activation)
+        self.activation_name = tf.keras.activations.serialize(self.activation)
+        self.kernel_regularizer = tf.keras.regularizers.get(kernel_regularizer)
+        self.kernel_regularizer_config = tf.keras.regularizers.serialize(self.kernel_regularizer)
+
+    def build(self, input_shape):
+        input_dim = int(input_shape[-1])
+
+        self.kernel = self.add_weight(
+            name="kernel",
+            shape=(input_dim, self.units),
+            initializer="glorot_uniform",
+            regularizer=self.kernel_regularizer,
+            trainable=True,
+        )
+
+        self.bias = self.add_weight(
+            name="bias",
+            shape=(self.units,),
+            initializer="zeros",
+            trainable=True,
+        )
+
+    def call(self, inputs):
+        masked_kernel = self.kernel * self.mask_matrix
+        out = tf.linalg.matmul(inputs, masked_kernel) + self.bias
+
+        if self.activation is not None:
+            out = self.activation(out)
+
+        return out
+
+    def get_config(self):
+        config = super().get_config()
+        config.update({
+            "units": self.units,
+            "mask_matrix": self.mask_matrix_np.tolist(),
+            "activation": self.activation_name,
+            "kernel_regularizer": self.kernel_regularizer_config,
+        })
+        return config
+
+    @classmethod
+    def from_config(cls, config):
+        return cls(**config)
+
+
+# =============================================================================
+# MODEL WITHOUT SOIL
+# =============================================================================
+
+def build_model(
+    n_weather_exp,
+    n_pca,
+    n_mapped_snps,
+    n_unmapped_snps,
+    n_genes,
+    snp_gene_mask,
+    learning_rate,
+    l2_lambda,
+    fusion_hidden_units,
+    dropout_rate,
+):
+    reg = tf.keras.regularizers.L2(l2_lambda) if l2_lambda > 0 else None
+
+    weather_exp_input = tf.keras.layers.Input(
+        shape=(n_weather_exp,),
+        name="Weather_Exp_Input"
+    )
+
+    pca_input = tf.keras.layers.Input(
+        shape=(n_pca,),
+        name="PCA_Input"
+    )
+
+    mapped_input = tf.keras.layers.Input(
+        shape=(n_mapped_snps,),
+        name="Mapped_SNP_Input"
+    )
+
+    unmapped_input = tf.keras.layers.Input(
+        shape=(n_unmapped_snps,),
+        name="Unmapped_SNP_Input"
+    )
+
+    # Weather expanded branch
+    xw = tf.keras.layers.Dense(
+        64,
+        activation="relu",
+        kernel_regularizer=reg,
+        name="weather_dense_64"
+    )(weather_exp_input)
+
+    xw = tf.keras.layers.Dense(
+        32,
+        activation="relu",
+        kernel_regularizer=reg,
+        name="weather_dense_32"
+    )(xw)
+
+    xw = tf.keras.layers.Dense(
+        16,
+        activation="relu",
+        kernel_regularizer=reg,
+        name="weather_dense_16"
+    )(xw)
+
+    xw = tf.keras.layers.Dense(
+        8,
+        activation="relu",
+        kernel_regularizer=reg,
+        name="weather_embedding"
+    )(xw)
+
+    # PCA branch
+    xp = tf.keras.layers.Dense(
+        128,
+        activation="relu",
+        kernel_regularizer=reg,
+        name="pca_dense_128_a"
+    )(pca_input)
+
+    xp = tf.keras.layers.Dense(
+        128,
+        activation="relu",
+        kernel_regularizer=reg,
+        name="pca_dense_128_b"
+    )(xp)
+
+    xp = tf.keras.layers.Dense(
+        64,
+        activation="relu",
+        kernel_regularizer=reg,
+        name="pca_dense_64"
+    )(xp)
+
+    xp = tf.keras.layers.Dense(
+        32,
+        activation="relu",
+        kernel_regularizer=reg,
+        name="pca_dense_32"
+    )(xp)
+
+    xp = tf.keras.layers.Dense(
+        16,
+        activation="relu",
+        kernel_regularizer=reg,
+        name="pca_dense_16"
+    )(xp)
+
+    xp = tf.keras.layers.Dense(
+        8,
+        activation="relu",
+        kernel_regularizer=reg,
+        name="pca_embedding"
+    )(xp)
+
+    # Mapped SNP -> gene branch
+    gene_embedding = MaskedDense(
+        units=n_genes,
+        mask_matrix=snp_gene_mask,
+        activation="relu",
+        kernel_regularizer=None,
+        name="snp_to_gene"
+    )(mapped_input)
+
+    # Unmapped SNP branch
+    unmapped_embedding = tf.keras.layers.Dense(
+        UNMAPPED_HIDDEN_UNITS,
+        activation="relu",
+        kernel_regularizer=reg,
+        name="unmapped_hidden"
+    )(unmapped_input)
+
+    bio_concat = tf.keras.layers.Concatenate(name="bio_concat")(
+        [gene_embedding, unmapped_embedding]
+    )
+
+    bio_embedding = tf.keras.layers.Dense(
+        BIO_HIDDEN_UNITS,
+        activation="relu",
+        kernel_regularizer=reg,
+        name="bio_hidden"
+    )(bio_concat)
+
+    # Global fusion WITHOUT soil
+    all_concat = tf.keras.layers.Concatenate(name="global_concat")(
+        [xw, xp, bio_embedding]
+    )
+
+    fusion_hidden = tf.keras.layers.Dense(
+        fusion_hidden_units,
+        activation="relu",
+        kernel_regularizer=reg,
+        name="fusion_hidden"
+    )(all_concat)
+
+    if dropout_rate > 0:
+        fusion_hidden = tf.keras.layers.Dropout(
+            dropout_rate,
+            name="fusion_dropout"
+        )(fusion_hidden)
+
+    output = tf.keras.layers.Dense(
+        1,
+        activation="linear",
+        name="output"
+    )(fusion_hidden)
+
+    model = tf.keras.Model(
+        inputs=[
+            weather_exp_input,
+            pca_input,
+            mapped_input,
+            unmapped_input,
+        ],
+        outputs=output,
+        name=MODEL_NAME
+    )
+
+    model.compile(
+        optimizer=tf.keras.optimizers.Adam(learning_rate=learning_rate),
+        loss="mse",
+        metrics=[tf.keras.metrics.MeanAbsoluteError(name="mae")]
+    )
+
+    return model
+
+
+# =============================================================================
+# PARAMS
+# =============================================================================
+
+def load_best_params(trait: str, out_dir: Path):
+    best_params_file = out_dir / "tuning" / f"best_params_{trait}_no_soil.json"
+
+    if best_params_file.exists():
+        with open(best_params_file, "r", encoding="utf-8") as f:
+            params = json.load(f)
+
+        print(f"[INFO] Loaded best params from: {best_params_file}")
+        return params
+
+    print(f"[WARNING] Best params file not found: {best_params_file}")
+    print("[WARNING] Using FALLBACK_PARAMS:")
+    print(FALLBACK_PARAMS)
+
+    return FALLBACK_PARAMS.copy()
+
+
+# =============================================================================
+# RUN ONE SPLIT
+# =============================================================================
+
+def run_one_split(
+    trait: str,
+    out_dir: Path,
+    split_name: str,
+    params: dict,
+    meta: pd.DataFrame,
+    inner: pd.DataFrame,
+    pca_all: np.ndarray,
+    weather_exp_all: np.ndarray,
+    save_outputs: bool = False,
+):
+    set_all_seeds(GLOBAL_SEED)
+    tf.keras.backend.clear_session()
+
+    split_obj = load_split_objects(trait, split_name)
+
+    df = prepare_split_dataframe(
+        trait=trait,
+        meta=meta,
+        inner=inner,
+        split_name=split_name,
+    )
+
+    mapped_snps = split_obj["mapped_snps"]
+    unmapped_snps = split_obj["unmapped_snps"]
+    all_genes = split_obj["all_genes"]
+    snp_to_gene_edges = split_obj["snp_to_gene_edges"]
+
+    X_mapped = df[mapped_snps].apply(pd.to_numeric, errors="coerce")
+    X_unmapped = df[unmapped_snps].apply(pd.to_numeric, errors="coerce")
+    y = pd.to_numeric(df[trait], errors="coerce")
+
+    subtrain_mask = df[f"{split_name}_Subtrain"] == 1
+    val_mask = df[f"{split_name}_Validation"] == 1
+    test_mask = df["Testing"] == 1
+
+    subtrain_idx = df.index[subtrain_mask]
+    val_idx = df.index[val_mask]
+    test_idx = df.index[test_mask]
+
+    if len(subtrain_idx) == 0 or len(val_idx) == 0 or len(test_idx) == 0:
+        raise ValueError(
+            f"{trait} {split_name}: split vuoto. "
+            f"subtrain={len(subtrain_idx)}, val={len(val_idx)}, test={len(test_idx)}"
+        )
+
+    # SNP split
+    X_mapped_subtrain = X_mapped.loc[subtrain_idx].copy()
+    X_mapped_val = X_mapped.loc[val_idx].copy()
+    X_mapped_test = X_mapped.loc[test_idx].copy()
+
+    X_unmapped_subtrain = X_unmapped.loc[subtrain_idx].copy()
+    X_unmapped_val = X_unmapped.loc[val_idx].copy()
+    X_unmapped_test = X_unmapped.loc[test_idx].copy()
+
+    # Shared arrays split
+    weather_exp_subtrain = weather_exp_all[subtrain_idx]
+    weather_exp_val = weather_exp_all[val_idx]
+    weather_exp_test = weather_exp_all[test_idx]
+
+    pca_subtrain = pca_all[subtrain_idx]
+    pca_val = pca_all[val_idx]
+    pca_test = pca_all[test_idx]
+
+    y_subtrain = y.loc[subtrain_idx].to_numpy(dtype=float)
+    y_val = y.loc[val_idx].to_numpy(dtype=float)
+    y_test = y.loc[test_idx].to_numpy(dtype=float)
+
+    # Missing SNP imputation from subtrain only
+    mapped_means = X_mapped_subtrain.mean()
+    unmapped_means = X_unmapped_subtrain.mean()
+
+    X_mapped_subtrain = X_mapped_subtrain.fillna(mapped_means)
+    X_mapped_val = X_mapped_val.fillna(mapped_means)
+    X_mapped_test = X_mapped_test.fillna(mapped_means)
+
+    X_unmapped_subtrain = X_unmapped_subtrain.fillna(unmapped_means)
+    X_unmapped_val = X_unmapped_val.fillna(unmapped_means)
+    X_unmapped_test = X_unmapped_test.fillna(unmapped_means)
+
+    # Scaling from subtrain only
+    mapped_scaler = StandardScaler()
+    X_mapped_subtrain_sc = mapped_scaler.fit_transform(X_mapped_subtrain.values)
+    X_mapped_val_sc = mapped_scaler.transform(X_mapped_val.values)
+    X_mapped_test_sc = mapped_scaler.transform(X_mapped_test.values)
+
+    unmapped_scaler = StandardScaler()
+    X_unmapped_subtrain_sc = unmapped_scaler.fit_transform(X_unmapped_subtrain.values)
+    X_unmapped_val_sc = unmapped_scaler.transform(X_unmapped_val.values)
+    X_unmapped_test_sc = unmapped_scaler.transform(X_unmapped_test.values)
+
+    weather_scaler = StandardScaler()
+    weather_exp_sub_sc = weather_scaler.fit_transform(weather_exp_subtrain)
+    weather_exp_val_sc = weather_scaler.transform(weather_exp_val)
+    weather_exp_test_sc = weather_scaler.transform(weather_exp_test)
+
+    pca_scaler = StandardScaler()
+    pca_sub_sc = pca_scaler.fit_transform(pca_subtrain)
+    pca_val_sc = pca_scaler.transform(pca_val)
+    pca_test_sc = pca_scaler.transform(pca_test)
+
+    if SCALE_TARGET:
+        y_scaler = StandardScaler()
+        y_subtrain_sc = y_scaler.fit_transform(y_subtrain.reshape(-1, 1)).ravel()
+        y_val_sc = y_scaler.transform(y_val.reshape(-1, 1)).ravel()
+    else:
+        y_scaler = None
+        y_subtrain_sc = y_subtrain
+        y_val_sc = y_val
+
+    # Sparse SNP -> gene mask
+    snp_gene_mask = build_sparse_weight_matrix(
+        input_names=mapped_snps,
+        output_names=all_genes,
+        edge_df=snp_to_gene_edges,
+        input_col="SNP",
+        output_col="Gene"
+    )
+
+    model = build_model(
+        n_weather_exp=weather_exp_sub_sc.shape[1],
+        n_pca=pca_sub_sc.shape[1],
+        n_mapped_snps=len(mapped_snps),
+        n_unmapped_snps=len(unmapped_snps),
+        n_genes=len(all_genes),
+        snp_gene_mask=snp_gene_mask,
+        learning_rate=params["learning_rate"],
+        l2_lambda=params["l2_lambda"],
+        fusion_hidden_units=params["fusion_hidden_units"],
+        dropout_rate=params["dropout_rate"],
+    )
+
+    callbacks = [
+        tf.keras.callbacks.EarlyStopping(
+            monitor="val_loss",
+            patience=EARLY_STOPPING_PATIENCE,
+            restore_best_weights=True,
+            verbose=0,
+        )
+    ]
+
+    history = model.fit(
+        [
+            weather_exp_sub_sc,
+            pca_sub_sc,
+            X_mapped_subtrain_sc,
+            X_unmapped_subtrain_sc,
+        ],
+        y_subtrain_sc,
+        validation_data=(
+            [
+                weather_exp_val_sc,
+                pca_val_sc,
+                X_mapped_val_sc,
+                X_unmapped_val_sc,
+            ],
+            y_val_sc,
+        ),
+        epochs=MAX_EPOCHS,
+        batch_size=BATCH_SIZE,
+        verbose=0,
+        callbacks=callbacks,
+    )
+
+    y_pred_test_sc = model.predict(
+        [
+            weather_exp_test_sc,
+            pca_test_sc,
+            X_mapped_test_sc,
+            X_unmapped_test_sc,
+        ],
+        verbose=0
+    ).ravel()
+
+    if y_scaler is not None:
+        y_pred_test = y_scaler.inverse_transform(
+            y_pred_test_sc.reshape(-1, 1)
+        ).ravel()
+    else:
+        y_pred_test = y_pred_test_sc
+
+    split_rmse = rmse(y_test, y_pred_test)
+    split_mae = mean_absolute_error(y_test, y_pred_test)
+    split_r2 = r2_score(y_test, y_pred_test)
+    split_r = pearson_r(y_test, y_pred_test)
+
+    best_epoch_idx = int(np.argmin(history.history["val_loss"]))
+
+    result = {
+        "Trait": trait,
+        "Split": split_name,
+        "Model": MODEL_NAME,
+        "RMSE": split_rmse,
+        "MAE": split_mae,
+        "r2": split_r2,
+        "r": split_r,
+        "best_epoch": best_epoch_idx + 1,
+        "best_val_loss": float(history.history["val_loss"][best_epoch_idx]),
+        "best_val_mae": float(history.history["val_mae"][best_epoch_idx]),
+        "n_mapped_snps": len(mapped_snps),
+        "n_unmapped_snps": len(unmapped_snps),
+        "n_genes": len(all_genes),
+        "n_subtrain": int(len(subtrain_idx)),
+        "n_validation": int(len(val_idx)),
+        "n_test": int(len(test_idx)),
+        "y_test": y_test,
+        "y_pred_test": y_pred_test,
+        "history": history.history,
+    }
+
+    if save_outputs:
+        hist_df = pd.DataFrame({
+            "epoch": np.arange(1, len(history.history["loss"]) + 1),
+            "train_loss": history.history["loss"],
+            "val_loss": history.history["val_loss"],
+            "train_mae": history.history["mae"],
+            "val_mae": history.history["val_mae"],
+            "Trait": trait,
+            "Split": split_name,
+            "Model": MODEL_NAME,
+        })
+
+        hist_df.to_csv(
+            out_dir / "loss_history" / f"loss_history_{trait}_{split_name}.csv",
+            index=False
+        )
+
+        metrics_df = pd.DataFrame([{
+            k: v for k, v in result.items()
+            if k not in ["y_test", "y_pred_test", "history"]
+        }])
+
+        metrics_df.to_csv(
+            out_dir / "metrics" / f"metrics_{trait}_{split_name}.csv",
+            index=False
+        )
+
+        if SAVE_MODELS:
+            model_path = out_dir / "models" / f"model_{trait}_{split_name}.keras"
+            model.save(model_path)
+
+    # Per liberare memoria tra split.
+    if not SAVE_MODELS:
+        del model
+
+    gc.collect()
+    tf.keras.backend.clear_session()
+
+    return result
+
+
+# =============================================================================
+# PARTIAL OUTPUTS
+# =============================================================================
+
+def save_partial_training_outputs(trait: str, out_dir: Path, all_metrics, all_preds):
+    metrics_df = pd.DataFrame(all_metrics)
+
+    if len(metrics_df) > 0:
+        mean_row = pd.DataFrame([{
+            "Trait": trait,
+            "Split": "Mean",
+            "Model": MODEL_NAME,
+            "RMSE": metrics_df["RMSE"].mean(),
+            "MAE": metrics_df["MAE"].mean(),
+            "r2": metrics_df["r2"].mean(),
+            "r": metrics_df["r"].mean(),
+            "best_epoch": metrics_df["best_epoch"].mean(),
+            "best_val_loss": metrics_df["best_val_loss"].mean(),
+            "best_val_mae": metrics_df["best_val_mae"].mean(),
+            "n_mapped_snps": metrics_df["n_mapped_snps"].mean(),
+            "n_unmapped_snps": metrics_df["n_unmapped_snps"].mean(),
+            "n_genes": metrics_df["n_genes"].mean(),
+            "n_subtrain": metrics_df["n_subtrain"].mean(),
+            "n_validation": metrics_df["n_validation"].mean(),
+            "n_test": metrics_df["n_test"].mean(),
+        }])
+
+        metrics_out = pd.concat([metrics_df, mean_row], ignore_index=True)
+
+        metrics_out.to_csv(
+            out_dir / "metrics" / f"metrics_{trait}_{MODEL_NAME}.csv",
+            index=False
+        )
+
+    if len(all_preds) > 0:
+        preds_out = pd.concat(all_preds, ignore_index=True)
+
+        preds_out.to_csv(
+            out_dir / "predictions" / f"predictions_{trait}_{MODEL_NAME}_all_splits.csv",
+            index=False
+        )
+
+
+# =============================================================================
+# TRAINING FOR ONE TRAIT
+# =============================================================================
+
+def run_training_for_trait(trait: str):
+    out_dir = BASE_OUT_DIR / trait
+    make_trait_dirs(out_dir)
+
+    meta, inner, split_cols, pca_all, weather_exp_all = load_trait_inputs(trait)
+    params = load_best_params(trait, out_dir)
+
+    print("\n" + "=" * 80)
+    print(f"Running final training for trait: {trait}")
+    print("Model:", MODEL_NAME)
+    print("Soil branch: REMOVED")
+    print("Using params:")
+    print(params)
+    print(f"Number of splits: {len(split_cols)}")
+    print("=" * 80)
+
+    existing_metrics_file = out_dir / "metrics" / f"metrics_{trait}_{MODEL_NAME}.csv"
+    existing_preds_file = out_dir / "predictions" / f"predictions_{trait}_{MODEL_NAME}_all_splits.csv"
+
+    all_metrics = []
+    all_preds = []
+    completed_splits = set()
+
+    # Resume logic
+    if existing_metrics_file.exists():
+        old_metrics = pd.read_csv(existing_metrics_file)
+        old_metrics = old_metrics[old_metrics["Split"] != "Mean"].copy()
+
+        if len(old_metrics) > 0:
+            all_metrics = old_metrics.to_dict(orient="records")
+            completed_splits = set(old_metrics["Split"].astype(str).tolist())
+
+            print(f"[RESUME] Existing metrics found: {existing_metrics_file}")
+            print(f"[RESUME] Completed splits: {len(completed_splits)}")
+
+    if existing_preds_file.exists():
+        old_preds = pd.read_csv(existing_preds_file)
+
+        if len(old_preds) > 0:
+            for _, sub in old_preds.groupby("Split"):
+                all_preds.append(sub.copy())
+
+            print(f"[RESUME] Existing predictions found: {existing_preds_file}")
+
+    for split_name in split_cols:
+        if split_name in completed_splits:
+            print(f"[SKIP] Already completed split: {trait} {split_name}")
+            continue
+
+        print("\n" + "-" * 80)
+        print(f"[{trait}] Training final model on split: {split_name}")
+        print("-" * 80)
+
+        res = run_one_split(
+            trait=trait,
+            out_dir=out_dir,
+            split_name=split_name,
+            params=params,
+            meta=meta,
+            inner=inner,
+            pca_all=pca_all,
+            weather_exp_all=weather_exp_all,
+            save_outputs=True,
+        )
+
+        metric_row = {
+            k: v for k, v in res.items()
+            if k not in ["y_test", "y_pred_test", "history"]
+        }
+
+        all_metrics.append(metric_row)
+
+        df = prepare_split_dataframe(
+            trait=trait,
+            meta=meta,
+            inner=inner,
+            split_name=split_name,
+        )
+
+        test_mask = df["Testing"] == 1
+
+        pred_df = df.loc[
+            test_mask,
+            ["Envir", "Genotype", trait, "Testing", "Split"]
+        ].copy()
+
+        pred_df = pred_df.rename(columns={trait: "Observed"})
+        pred_df["Predicted"] = res["y_pred_test"]
+        pred_df["Residual"] = pred_df["Observed"] - pred_df["Predicted"]
+        pred_df["Trait"] = trait
+        pred_df["Model"] = MODEL_NAME
+
+        all_preds.append(pred_df)
+
+        save_partial_training_outputs(
+            trait=trait,
+            out_dir=out_dir,
+            all_metrics=all_metrics,
+            all_preds=all_preds,
+        )
+
+        print(
+            f"[SPLIT DONE] {trait} {split_name} | "
+            f"RMSE={res['RMSE']:.4f}, "
+            f"MAE={res['MAE']:.4f}, "
+            f"R2={res['r2']:.4f}, "
+            f"r={res['r']:.4f}, "
+            f"best_epoch={res['best_epoch']}"
+        )
+
+    metrics_df = pd.DataFrame(all_metrics)
+    metrics_no_mean = metrics_df[metrics_df["Split"] != "Mean"].copy()
+
+    print("\n" + "=" * 80)
+    print(f"TRAINING FINISHED FOR {trait}")
+    print("=" * 80)
+
+    if len(metrics_no_mean) > 0:
+        mean_metrics = metrics_no_mean[["RMSE", "MAE", "r2", "r", "best_epoch"]].mean()
+        std_metrics = metrics_no_mean[["RMSE", "MAE", "r2", "r", "best_epoch"]].std(ddof=1)
+
+        print("Final mean metrics across completed splits:")
+        print(mean_metrics.to_string())
+
+        summary_path = out_dir / "metrics" / f"summary_{trait}_{MODEL_NAME}.txt"
+
+        with open(summary_path, "w", encoding="utf-8") as f:
+            f.write("=" * 80 + "\n")
+            f.write("NO-SOIL V3 TRAINING SUMMARY - NEW TRAIT\n")
+            f.write("=" * 80 + "\n\n")
+            f.write(f"MODEL_NAME: {MODEL_NAME}\n")
+            f.write(f"TRAIT: {trait}\n")
+            f.write("Soil branch: REMOVED\n\n")
+            f.write("Best params:\n")
+            f.write(json.dumps(params, indent=2))
+            f.write("\n\n")
+            f.write("Mean metrics across completed splits:\n")
+            f.write(mean_metrics.to_string())
+            f.write("\n\n")
+            f.write("Std metrics across completed splits:\n")
+            f.write(std_metrics.to_string())
+            f.write("\n\n")
+            f.write("Per-split metrics:\n")
+            f.write(metrics_no_mean.to_string(index=False))
+
+        print(f"\nSaved summary:")
+        print(summary_path)
+
+    print("\nSaved metrics:")
+    print(out_dir / "metrics" / f"metrics_{trait}_{MODEL_NAME}.csv")
+
+    print("\nSaved predictions:")
+    print(out_dir / "predictions" / f"predictions_{trait}_{MODEL_NAME}_all_splits.csv")
+
+    return {
+        "Trait": trait,
+        "n_completed_splits": len(metrics_no_mean),
+        "metrics_file": str(out_dir / "metrics" / f"metrics_{trait}_{MODEL_NAME}.csv"),
+        "predictions_file": str(out_dir / "predictions" / f"predictions_{trait}_{MODEL_NAME}_all_splits.csv"),
+        "summary_file": str(out_dir / "metrics" / f"summary_{trait}_{MODEL_NAME}.txt"),
+    }
+
+
+# =============================================================================
+# MAIN
+# =============================================================================
+
+def main():
+    print("\n" + "=" * 80)
+    print("Q2 - FINAL TRAINING NO-SOIL V3 FOR NEW TRAITS")
+    print("=" * 80)
+
+    set_all_seeds(GLOBAL_SEED)
+
+    all_rows = []
+
+    for trait in TRAITS:
+        row = run_training_for_trait(trait)
+        all_rows.append(row)
+
+    summary = pd.DataFrame(all_rows)
+    summary_file = BASE_OUT_DIR / "Q2_training_completed_traits_summary.csv"
+    summary_file.parent.mkdir(parents=True, exist_ok=True)
+    summary.to_csv(summary_file, index=False)
+
+    print("\n" + "=" * 80)
+    print("Q2 COMPLETED")
+    print("=" * 80)
+    print(summary.to_string(index=False))
+    print("\nSaved:")
+    print(summary_file)
+
+
+if __name__ == "__main__":
+    main()
