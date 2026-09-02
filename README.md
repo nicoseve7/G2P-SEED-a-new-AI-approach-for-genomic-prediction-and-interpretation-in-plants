@@ -100,17 +100,18 @@ apple-genomic-prediction/
 ├── run_new_traits.py
 ├── requirements.txt
 └── README.md
+```markdown
 
 ## Reproducibility
 The analysis scripts are designed to be executed from the repository root.
 
-#Common genomic preprocessing
+## Common genomic preprocessing
 python run_preprocessing.py
 
-#Harvest date analysis
+## Harvest date analysis
 python run_harvest.py
 
-#Acidity and red overcolor analysis
+## Acidity and red overcolor analysis
 python run_new_traits.py
 
 Some computationally intensive steps, including neural network tuning,
