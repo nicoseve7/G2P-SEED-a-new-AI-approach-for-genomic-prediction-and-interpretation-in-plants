@@ -18,22 +18,34 @@ library(snpStats)
 
 TRAITS <- c("Acidity", "Color_over")
 
-PROJECT_DIR <- "."
-OUTPUT_DIR <- file.path(PROJECT_DIR, "Output")
-REPORT_DIR <- file.path(OUTPUT_DIR, "00_trait_audit")
+REPORT_DIR <- "03_acidity_color_over/01_data_audit/output"
 dir.create(REPORT_DIR, recursive = TRUE, showWarnings = FALSE)
 
-PHENO_FILE <- file.path("..", "Input", "Pheno_raw.xlsx")
+PHENO_FILE <- "data/raw/phenotype/Pheno_raw.xlsx"
 
-BED_FILE <- file.path("..", "Input", "SNPs_final_2022.bed")
-BIM_FILE <- file.path("..", "Input", "SNPs_final_2022.bim")
-FAM_FILE <- file.path("..", "Input", "SNPs_final_2022.fam")
+BED_FILE <- "data/raw/genotype/SNPs_final_2022.bed"
+BIM_FILE <- "data/raw/genotype/SNPs_final_2022.bim"
+FAM_FILE <- "data/raw/genotype/SNPs_final_2022.fam"
 
-SAVE_GLOBAL <- file.path(REPORT_DIR, "P0_new_traits_summary_global.csv")
-SAVE_BY_ENV <- file.path(REPORT_DIR, "P0_new_traits_summary_by_environment.csv")
-SAVE_MATCH <- file.path(REPORT_DIR, "P0_new_traits_genotype_match.csv")
-SAVE_REPORT <- file.path(REPORT_DIR, "P0_new_traits_audit_report.txt")
+SAVE_GLOBAL <- file.path(
+  REPORT_DIR,
+  "P0_new_traits_summary_global.csv"
+)
 
+SAVE_BY_ENV <- file.path(
+  REPORT_DIR,
+  "P0_new_traits_summary_by_environment.csv"
+)
+
+SAVE_MATCH <- file.path(
+  REPORT_DIR,
+  "P0_new_traits_genotype_match.csv"
+)
+
+SAVE_REPORT <- file.path(
+  REPORT_DIR,
+  "P0_new_traits_audit_report.txt"
+)
 
 check_file <- function(path) {
   exists <- file.exists(path)
