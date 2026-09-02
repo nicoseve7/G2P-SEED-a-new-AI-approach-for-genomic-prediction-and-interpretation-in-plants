@@ -23,7 +23,11 @@ TRAITS = ["Acidity", "Color_over"]
 
 MODEL_NAME = "paper4branches_bio_geni_relu_concathidden_dropout_meteoexp_v3_no_soil"
 
-BASE_MODEL_DIR = Path("Output/02_no_soil_model")
+SHAP_OUT_DIR = (
+    Path("03_acidity_color_over")
+    / "05_shap"
+    / "output"
+)
 
 
 # =============================================================================
@@ -73,9 +77,9 @@ def plot_barh(
 
 
 def get_file_paths(trait: str):
-    trait_dir = BASE_MODEL_DIR / trait
-    agg_dir = trait_dir / "Interpretation" / "Aggregated_tables"
-    graph_dir = trait_dir / "Interpretation" / "Graphs"
+    trait_dir = SHAP_OUT_DIR / trait
+    agg_dir = trait_dir / "Aggregated_tables"
+    graph_dir = trait_dir / "Graphs"
     graph_dir.mkdir(parents=True, exist_ok=True)
 
     paths = {
