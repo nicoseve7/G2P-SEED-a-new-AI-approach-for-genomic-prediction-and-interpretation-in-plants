@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 ################################################################################
 ### Q3_graphs_no_soil_newtraits.py
 ###
@@ -38,7 +36,12 @@ TRAITS = ["Acidity", "Color_over"]
 MODEL_FULL_NAME = "paper4branches_bio_geni_relu_concathidden_dropout_meteoexp_v3_no_soil"
 MODEL_LABEL = "no_soil_v3"
 
-BASE_MODEL_DIR = Path("Output/02_no_soil_model")
+BASE_MODEL_DIR = (
+    Path("03_acidity_color_over")
+    / "04_neural_network"
+    / "output"
+    / "no_soil_model"
+)
 
 DPI = 300
 
