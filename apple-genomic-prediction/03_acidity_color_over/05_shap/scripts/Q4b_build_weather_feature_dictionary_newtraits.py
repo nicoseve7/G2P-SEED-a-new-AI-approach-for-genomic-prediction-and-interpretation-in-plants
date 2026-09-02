@@ -14,10 +14,21 @@ import pandas as pd
 
 TRAITS = ["Acidity", "Color_over"]
 
-BASE_MODEL_DIR = Path("Output/02_no_soil_model")
-NPY_BASE_DIR = Path("Output/Intermediate/numpy_arrays_newtraits")
+NN_OUT_DIR = (
+    Path("03_acidity_color_over")
+    / "04_neural_network"
+    / "output"
+)
 
-COMMON_DICT_DIR = BASE_MODEL_DIR / "Feature_dictionaries"
+SHAP_OUT_DIR = (
+    Path("03_acidity_color_over")
+    / "05_shap"
+    / "output"
+)
+
+NPY_BASE_DIR = NN_OUT_DIR / "numpy_arrays_newtraits"
+
+COMMON_DICT_DIR = SHAP_OUT_DIR / "Feature_dictionaries"
 COMMON_DICT_DIR.mkdir(parents=True, exist_ok=True)
 
 COMMON_SAVE_FILE = COMMON_DICT_DIR / "weather_v3_feature_dictionary.csv"
@@ -149,7 +160,7 @@ def main():
 
     # Copia anche dentro ogni trait, così H2/H3 possono trovarlo facilmente.
     for trait in TRAITS:
-        trait_dict_dir = BASE_MODEL_DIR / trait / "Interpretation" / "Feature_dictionaries"
+        trait_dict_dir = (BASE_MODEL_DIR/trait/"Interpretation"/"Feature_dictionaries")
         trait_dict_dir.mkdir(parents=True, exist_ok=True)
 
         trait_save_file = trait_dict_dir / "weather_v3_feature_dictionary.csv"
