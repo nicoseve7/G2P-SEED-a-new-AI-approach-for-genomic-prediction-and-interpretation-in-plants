@@ -4,18 +4,6 @@
 ### Q8_annotate_ranked_regions_newtraits.py
 ###
 ### Annotate Q7 ranked genomic regions with genes from GDDH13 GFF3.
-###
-### Input:
-###   Output/03_regioni_ranked/<Trait>/ranked_regions_50kb_<Trait>.csv
-###   Output/03_regioni_ranked/<Trait>/top1000_regions_by_region_score_50kb_<Trait>.csv
-###   Output/03_regioni_ranked/<Trait>/ranked_regions_100kb_<Trait>.csv
-###   Output/03_regioni_ranked/<Trait>/top1000_regions_by_region_score_100kb_<Trait>.csv
-###
-### Output:
-###   Output/04_regioni_annotate/<Trait>/
-###
-### Run from:
-###   dalpaper/nuovitrattinosoil/
 ################################################################################
 
 from pathlib import Path
