@@ -36,26 +36,49 @@ import pandas as pd
 
 TRAITS = ["Acidity", "Color_over"]
 
-OUT_DIR = Path("Output/Intermediate/numpy_arrays_newtraits")
-
-PHENO_BASE_DIR = Path("Output/01_pheno_processed")
-
-PCA_FILE = Path("Output/genomic_PCs_20_paper_style.csv")
-
-CV_FILE = Path("Input/CV1_Strategy/Harvest_date_CV.csv")
-
-# File weather V3 prodotti nella pipeline esperimento_meteo.
-# weather_period_features_v3_aligned.csv contiene molte righe per Envir
-# perché era già allineato ai campioni Harvest_date.
-# Per questo script lo riduciamo internamente a una riga per Envir.
-WEATHER_FEATURES_FILE = Path(
-    "../esperimento_meteo/Output/numpy_arrays_weather_exp/weather_period_features_v3_aligned.csv"
+NN_OUT_DIR = (
+    Path("03_acidity_color_over")
+    / "04_neural_network"
+    / "output"
 )
 
-WEATHER_COLUMNS_FILE = Path(
-    "../esperimento_meteo/Output/numpy_arrays_weather_exp/weather_period_features_v3_columns.csv"
+OUT_DIR = NN_OUT_DIR / "numpy_arrays_newtraits"
+
+PHENO_BASE_DIR = (
+    Path("03_acidity_color_over")
+    / "02_phenotype_preprocessing"
+    / "output"
 )
 
+PCA_FILE = (
+    Path("01_common_genomic_preprocessing")
+    / "output"
+    / "genomic_PCs_20_paper_style.csv"
+)
+
+CV_FILE = (
+    Path("data")
+    / "raw"
+    / "cv"
+    / "Harvest_date_CV.csv"
+)
+
+HARVEST_WEATHER_DIR = (
+    Path("02_harvest_date")
+    / "07_neural_network"
+    / "output"
+    / "weather_features"
+)
+
+WEATHER_FEATURES_FILE = (
+    HARVEST_WEATHER_DIR
+    / "weather_period_features_v3_aligned.csv"
+)
+
+WEATHER_COLUMNS_FILE = (
+    HARVEST_WEATHER_DIR
+    / "weather_period_features_v3_columns.csv"
+)
 
 # =============================================================================
 # HELPERS
@@ -287,7 +310,7 @@ def load_weather_v3():
     print(f"  rows: {n_rows_raw}")
     print(f"  unique Envir: {n_env_raw}")
 
-    # Verifica consistenza: ogni Envir deve avere un unico profilo meteo.
+    # Consistency check: Each Envir must have a unique weather profile.
     inconsistent_envs = []
 
     for env, sub in weather_raw.groupby("Envir", sort=False):
@@ -302,7 +325,7 @@ def load_weather_v3():
             f"Esempi Envir inconsistenti: {inconsistent_envs[:20]}"
         )
 
-    # Una sola riga per Envir.
+    # Just one line for Envir.
     weather_by_env = (
         weather_raw
         .drop_duplicates(subset=["Envir"])
@@ -364,14 +387,14 @@ def process_one_trait(
     print(f"Unique genotypes used by network: {pheno['Genotype'].nunique()}")
     print(f"Unique environments used by network: {pheno['Envir'].nunique()}")
 
-    # Rimuoviamo ID_key dal metadata finale perché Q1 lo ricostruisce.
-    # Però lo teniamo internamente finché serve per il report.
+    # We remove ID_key from the final metadata because Q1 reconstructs it.
+    # However, we keep it internally as long as it's needed for the report.
     pheno_for_output = pheno[["Genotype", "Envir", trait]].copy()
 
     # -------------------------------------------------------------------------
     # PCA alignment
-    # PCA dipende dal Genotype, quindi tutti i campioni dello stesso genotipo
-    # ricevono lo stesso vettore PC.
+    # PCA depends on genotype, so all samples of the same genotype
+    # receive the same PC vector.
     # -------------------------------------------------------------------------
     merged_pca = pheno_for_output[["Genotype", "Envir", trait]].merge(
         pca,
@@ -406,10 +429,10 @@ def process_one_trait(
 
     # -------------------------------------------------------------------------
     # Weather V3 alignment
-    # Weather V3 dipende da Envir, quindi tutti i campioni dello stesso Envir
-    # ricevono lo stesso vettore weather.
+    # Weather V3 depends on Envir, so all samples from the same Envir
+    # receive the same weather vector.
     #
-    # Output finale: n_sample_trait x 48
+    # Final output: n_sample_trait x 48
     # -------------------------------------------------------------------------
     merged_weather = pheno_for_output[["Genotype", "Envir", trait]].merge(
         weather_by_env,
