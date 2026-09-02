@@ -12,9 +12,6 @@
 ###
 ### Output:
 ###   Output/02_no_soil_model/<TRAIT>/Interpretation/Aggregated_tables/
-###
-### Da eseguire da:
-###   dalpaper/nuovitrattinosoil/
 ################################################################################
 
 from pathlib import Path
