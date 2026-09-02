@@ -22,21 +22,6 @@
 ###
 ### Ridge always includes PCA as fixed covariates.
 ### GA selects SNPs only.
-###
-### Inputs expected from Q9:
-###   Output/05_ga_inputs/
-###       Q9_ga_inputs_summary_all_traits.csv
-###       X_snp_top1000_regions_50kb_<TRAIT>.csv
-###       X_pca_20_<TRAIT>.csv
-###       y_mean_adjusted_by_genotype_<TRAIT>.csv
-###       snp_metadata_top1000_regions_50kb_<TRAIT>.csv
-###
-### Optional inputs from G2D:
-###   Output/06_ga_runs/G2D_sensitivity_mutation_crossover_newtraits/<TRAIT>/
-###       G2D_best_config_by_RMSE_<TRAIT>.json
-###
-### Outputs:
-###   Output/06_ga_runs/G2B_multiseed_ga_newtraits/<TRAIT>/
 ################################################################################
 
 import os
@@ -60,7 +45,6 @@ from deap import base, creator, tools, algorithms
 
 warnings.filterwarnings("ignore")
 
-
 # =============================================================================
 # CONFIG
 # =============================================================================
@@ -74,8 +58,13 @@ DATASET_LABEL = "no_soil_top1000_regions_newtraits"
 GA_INPUT_DIR = Path("Output/05_ga_inputs")
 Q9_SUMMARY_FILE = GA_INPUT_DIR / "Q9_ga_inputs_summary_all_traits.csv"
 
-G2D_BASE_DIR = Path("Output/06_ga_runs/G2D_sensitivity_mutation_crossover_newtraits")
-BASE_OUT_DIR = Path("Output/06_ga_runs/G2B_multiseed_ga_newtraits")
+G2D_BASE_DIR = Path(
+    "Output/06_ga_runs/G2D_sensitivity_mutation_crossover_newtraits"
+)
+
+BASE_OUT_DIR = Path(
+    "Output/06_ga_runs/G2B_multiseed_ga_newtraits"
+)
 BASE_OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 # If True, tries to load CXPB/MUTPB from G2D best-config json.
