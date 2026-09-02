@@ -20,13 +20,6 @@
 ###   - hyperparameter frequency plots
 ###   - GA fitness evolution plots
 ###   - final report
-###
-### Input:
-###   Output/06_ga_runs/G2B_multiseed_ga_newtraits/<TRAIT>/
-###
-### Output:
-###   Output/06_ga_runs/G2B_multiseed_ga_newtraits/<TRAIT>/figures_G3/
-###   Output/06_ga_runs/G2B_multiseed_ga_newtraits/<TRAIT>/tables_G3/
 ################################################################################
 
 from pathlib import Path
@@ -50,7 +43,13 @@ warnings.filterwarnings("ignore")
 
 TRAITS = ["Acidity", "Color_over"]
 
-BASE_RUN_DIR = Path("Output/06_ga_runs/G2B_multiseed_ga_newtraits")
+BASE_RUN_DIR = (
+    Path("03_acidity_color_over")
+    / "06_genetic_algorithm"
+    / "output"
+    / "04_ga_runs"
+    / "G2B_multiseed_ga_newtraits"
+)
 
 DPI = 300
 TOP_N = 20
