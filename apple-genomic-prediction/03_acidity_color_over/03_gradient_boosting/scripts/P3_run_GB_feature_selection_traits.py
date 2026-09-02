@@ -34,13 +34,15 @@ from sklearn.ensemble import GradientBoostingRegressor
 
 TRAITS = ["Acidity", "Color_over"]
 
-GB_WORKING_DIR = Path("Output/Intermediate/GB_feature_selection")
+GB_WORKING_DIR = Path(
+    "03_acidity_color_over/03_gradient_boosting/output"
+)
 
 N_ESTIMATORS = 200
 RANDOM_STATE = 0
 
-# Se True, salva anche un file per ogni split con tutti gli SNP ordinati per importance.
-# Può essere grande, quindi di default lo lascio False.
+# If True, it also saves a file for each split containing all the SNPs sorted by importance.
+# This can be a large file, so by default I leave it set to False.
 SAVE_PER_SPLIT_FULL_IMPORTANCE = False
 
 
