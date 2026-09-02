@@ -21,25 +21,29 @@ WINDOW_LABELS = ["50kb", "100kb"]
 TOP_K = 1000
 NEARBY_BP = 10000
 
-RANK_BASE_DIR = Path("Output/03_regioni_ranked")
-OUT_BASE_DIR = Path("Output/04_regioni_annotate")
+GA_OUT_DIR = (
+    Path("03_acidity_color_over")
+    / "06_genetic_algorithm"
+    / "output"
+)
 
-GFF3_CANDIDATES = [
-    Path("Input/gene_models_20170612.gff3"),
-    Path("../Input/gene_models_20170612.gff3"),
-    Path("Output/gene_models_20170612.gff3"),
-    Path("../Output/gene_models_20170612.gff3"),
-    Path("../bio_geni_relu_concathidden/Input/gene_models_20170612.gff3"),
-    Path("../bio_geni_relu_concathidden/Output/gene_models_20170612.gff3"),
-]
+RANK_BASE_DIR = GA_OUT_DIR / "01_region_ranking"
+OUT_BASE_DIR = GA_OUT_DIR / "02_region_annotations"
 
-# opzionale: se c'è, lo usa per aggiungere annotazioni funzionali
-SWISSPROT_CANDIDATES = [
-    Path("Input/Malus_x_domestica_GDDH13_v1.1_vs_swissprot.xlsx"),
-    Path("../Input/Malus_x_domestica_GDDH13_v1.1_vs_swissprot.xlsx"),
-    Path("Output/Malus_x_domestica_GDDH13_v1.1_vs_swissprot.xlsx"),
-    Path("../Output/Malus_x_domestica_GDDH13_v1.1_vs_swissprot.xlsx"),
-]
+GFF3_FILE = (
+    Path("data")
+    / "raw"
+    / "annotation"
+    / "gene_models_20170612.gff3"
+)
+
+# optional: if present, it uses it to add functional annotations
+SWISSPROT_FILE = (
+    Path("data")
+    / "raw"
+    / "annotation"
+    / "Malus_x_domestica_GDDH13_v1.1_vs_swissprot.xlsx"
+)
 
 
 # =============================================================================
@@ -106,7 +110,12 @@ def clean_gene_id(g):
 
 
 def load_gff3_genes():
-    gff3_file = find_existing_file(GFF3_CANDIDATES, "gene_models_20170612.gff3")
+    if not GFF3_FILE.exists():
+    raise FileNotFoundError(
+        f"GFF3 non trovato:\n{GFF3_FILE}"
+    )
+
+    gff3_file = GFF3_FILE
 
     print(f"[INFO] Uso GFF3: {gff3_file}")
 
@@ -155,7 +164,7 @@ def load_gff3_genes():
 
 
 def load_swissprot_optional():
-    swiss_file = find_existing_file(SWISSPROT_CANDIDATES, "SwissProt annotation", required=False)
+    swiss_file = SWISSPROT_FILE if SWISSPROT_FILE.exists() else None
 
     if swiss_file is None:
         print("[INFO] File SwissProt non trovato. Procedo solo con gene_id.")
@@ -169,7 +178,7 @@ def load_swissprot_optional():
         print(f"[WARNING] Impossibile leggere SwissProt: {e}")
         return None
 
-    # Trova una possibile colonna gene
+    # Find a possible gene column
     gene_col = None
     for c in df.columns:
         cl = str(c).lower()
@@ -184,7 +193,7 @@ def load_swissprot_optional():
     df = df.copy()
     df["gene_id"] = df[gene_col].astype(str).apply(clean_gene_id)
 
-    # Teniamo poche colonne leggibili, se esistono
+    # Let's keep a few columns readable, if there are any
     candidate_cols = ["gene_id"]
     for c in df.columns:
         cl = str(c).lower()
@@ -236,7 +245,7 @@ def annotate_regions(regions: pd.DataFrame, genes: pd.DataFrame, swiss=None):
     regions["region_start_parsed"] = [p[1] for p in parsed]
     regions["region_end_parsed"] = [p[2] for p in parsed]
 
-    # Usa colonne già presenti se ci sono, altrimenti quelle parsate
+    # Use existing columns if they exist; otherwise, use the parsed ones
     if "CHROM" in regions.columns:
         regions["CHROM_norm"] = regions["CHROM"].apply(normalize_chr)
     else:
@@ -293,7 +302,7 @@ def annotate_regions(regions: pd.DataFrame, genes: pd.DataFrame, swiss=None):
 
     annotated = pd.DataFrame(out_rows)
 
-    # Aggiunta opzionale descrizioni SwissProt aggregate
+    # Optional addition of aggregated SwissProt descriptions
     if swiss is not None and "genes_inside" in annotated.columns:
         swiss_cols = [c for c in swiss.columns if c != "gene_id"]
 
@@ -326,7 +335,7 @@ def annotate_regions(regions: pd.DataFrame, genes: pd.DataFrame, swiss=None):
             f"genes_nearby_{NEARBY_BP//1000}kb"
         ].apply(summarize_swiss)
 
-    # rimuovi colonne tecniche se vuoi tenerlo pulito
+    # Remove the technical columns if you want to keep it clean
     technical_cols = ["region_CHROM_norm", "region_start_parsed", "region_end_parsed", "CHROM_norm"]
     annotated = annotated.drop(columns=[c for c in technical_cols if c in annotated.columns])
 
