@@ -34,23 +34,42 @@ TRAITS = ["Acidity", "Color_over"]
 
 MODEL_NAME = "paper4branches_bio_geni_relu_concathidden_dropout_meteoexp_v3_no_soil"
 
-BASE_MODEL_DIR = Path("Output/02_no_soil_model")
+NN_OUT_DIR = (
+    Path("03_acidity_color_over")
+    / "04_neural_network"
+    / "output"
+)
 
-NPY_BASE_DIR = Path("Output/Intermediate/numpy_arrays_newtraits")
-GENO_BASE_DIR = Path("Output/Intermediate/geno_files")
-BIO_BASE_DIR = Path("Output/biologic_objects")
+SHAP_OUT_DIR = (
+    Path("03_acidity_color_over")
+    / "05_shap"
+    / "output"
+)
 
-INNER_SPLITS_FILE = Path("Output/datasets/inner_validation_splits_newtraits.csv")
+BASE_MODEL_DIR = NN_OUT_DIR / "no_soil_model"
+
+NPY_BASE_DIR = NN_OUT_DIR / "numpy_arrays_newtraits"
+
+GENO_BASE_DIR = (
+    Path("03_acidity_color_over")
+    / "03_gradient_boosting"
+    / "output"
+    / "geno_files"
+)
+
+BIO_BASE_DIR = NN_OUT_DIR / "biologic_objects"
+
+INNER_SPLITS_FILE = (
+    NN_OUT_DIR
+    / "datasets"
+    / "inner_validation_splits_newtraits.csv"
+)
 
 GLOBAL_SEED = 42
 
 # SHAP settings
-# Background troppo grande = SHAP molto lento.
-# 200 è un compromesso ragionevole. Puoi aumentare se hai tempo/GPU.
 MAX_BACKGROUND_SAMPLES = 200
 
-# None = spiega tutto il test set.
-# Se diventa troppo lento, puoi mettere ad esempio 500.
 MAX_EXPLAIN_SAMPLES = None
 
 RANDOM_SEED_FOR_SHAP_SAMPLING = 42
@@ -260,25 +279,26 @@ def normalize_multiinput_shap_output(shap_values):
 
 
 # =============================================================================
-# PATHS PER TRAIT
+# PATHS FOR TRAIT
 # =============================================================================
 
 def get_trait_paths(trait: str):
     model_out_dir = BASE_MODEL_DIR / trait
+shap_trait_dir = SHAP_OUT_DIR / trait
 
-    paths = {
-        "model_out_dir": model_out_dir,
-        "model_dir": model_out_dir / "models",
-        "save_arrays_dir": model_out_dir / "Interpretation" / "SHAP_arrays",
-        "save_tables_dir": model_out_dir / "Interpretation" / "Splitwise_tables",
-        "save_reports_dir": model_out_dir / "Interpretation" / "Reports",
-        "meta_file": NPY_BASE_DIR / trait / f"sample_metadata_{trait}.csv",
-        "pca_file": NPY_BASE_DIR / trait / "pca.npy",
-        "weather_file": NPY_BASE_DIR / trait / "weather_period_features_v3.npy",
-        "weather_cols_file": NPY_BASE_DIR / trait / "weather_period_features_v3_columns.csv",
-        "geno_dir": GENO_BASE_DIR / trait,
-        "split_inputs_dir": BIO_BASE_DIR / trait / "split_inputs",
-    }
+paths = {
+    "model_out_dir": model_out_dir,
+    "model_dir": model_out_dir / "models",
+    "save_arrays_dir": shap_trait_dir / "SHAP_arrays",
+    "save_tables_dir": shap_trait_dir / "Splitwise_tables",
+    "save_reports_dir": shap_trait_dir / "Reports",
+    "meta_file": NPY_BASE_DIR / trait / f"sample_metadata_{trait}.csv",
+    "pca_file": NPY_BASE_DIR / trait / "pca.npy",
+    "weather_file": NPY_BASE_DIR / trait / "weather_period_features_v3.npy",
+    "weather_cols_file": NPY_BASE_DIR / trait / "weather_period_features_v3_columns.csv",
+    "geno_dir": GENO_BASE_DIR / trait,
+    "split_inputs_dir": BIO_BASE_DIR / trait / "split_inputs",
+}
 
     for key in ["save_arrays_dir", "save_tables_dir", "save_reports_dir"]:
         paths[key].mkdir(parents=True, exist_ok=True)
