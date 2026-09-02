@@ -7,12 +7,6 @@
 ### for:
 ###   - Acidity
 ###   - Color_over
-###
-### Input:
-###   Output/02_no_soil_model/<TRAIT>/Interpretation/Aggregated_tables/
-###
-### Output:
-###   Output/02_no_soil_model/<TRAIT>/Interpretation/Graphs/
 ################################################################################
 
 from pathlib import Path
