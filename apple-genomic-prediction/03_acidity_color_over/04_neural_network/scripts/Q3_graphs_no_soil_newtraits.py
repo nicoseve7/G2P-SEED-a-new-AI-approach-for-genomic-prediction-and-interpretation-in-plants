@@ -16,9 +16,6 @@
 ###   - per-split loss curves
 ###   - mean train/validation loss curve
 ###   - best epoch distribution
-###
-### Da eseguire da:
-###   dalpaper/nuovitrattinosoil/
 ################################################################################
 
 from pathlib import Path
