@@ -1,18 +1,16 @@
-# -*- coding: utf-8 -*-
-
 ################################################################################
 ### Q0b_make_inner_validation_splits_newtraits.py
 ###
-### Crea inner validation splits per i nuovi tratti:
+### Creates inner validation splits for the new traits:
 ###   - Acidity
 ###   - Color_over
 ###
-### Usa:
+### Uses:
 ###   - Output/Intermediate/numpy_arrays_newtraits/<Trait>/sample_metadata_<Trait>.csv
 ###   - Input/CV1_Strategy/Harvest_date_CV.csv
 ###
-### Logica:
-###   Per ogni trait e per ogni CV split:
+### Logic:
+###   For each trait and for each CV split:
 ###       Testing = CV == 1
 ###       Outer training = CV == 0
 ###
@@ -27,8 +25,8 @@
 ### Output:
 ###   Output/datasets/inner_validation_splits_newtraits.csv
 ###
-### Nota:
-###   Il file contiene colonne specifiche per ogni trait:
+### Note:
+###   The file contains columns specific to each trait:
 ###       Acidity_CV1_Split1_Subtrain
 ###       Acidity_CV1_Split1_Validation
 ###       Acidity_CV1_Split1_Testing
@@ -48,10 +46,22 @@ import pandas as pd
 
 TRAITS = ["Acidity", "Color_over"]
 
-NPY_BASE_DIR = Path("Output/Intermediate/numpy_arrays_newtraits")
-CV_FILE = Path("Input/CV1_Strategy/Harvest_date_CV.csv")
+NN_OUT_DIR = (
+    Path("03_acidity_color_over")
+    / "04_neural_network"
+    / "output"
+)
 
-OUT_DIR = Path("Output/datasets")
+NPY_BASE_DIR = NN_OUT_DIR / "numpy_arrays_newtraits"
+
+CV_FILE = (
+    Path("data")
+    / "raw"
+    / "cv"
+    / "Harvest_date_CV.csv"
+)
+
+OUT_DIR = NN_OUT_DIR / "datasets"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 OUT_FILE = OUT_DIR / "inner_validation_splits_newtraits.csv"
@@ -355,7 +365,7 @@ def main():
         all_inner.append(inner_trait)
         all_summary.append(summary_trait)
 
-        print(summary_trait[["Split", "n_total", "n_subtrain", "n_validation", "n_testing"]].head())
+        print(summary_trait[["Split","n_total_observations","n_subtrain_observations","n_validation_observations","n_test_observations",]].head())
 
     inner_all = pd.concat(all_inner, ignore_index=True)
     summary_all = pd.concat(all_summary, ignore_index=True)
@@ -410,8 +420,6 @@ def main():
                     "mean"
                 ),
             )
-            .reset_index()
-            .to_string(index=False)
             .reset_index()
             .to_string(index=False)
         )
