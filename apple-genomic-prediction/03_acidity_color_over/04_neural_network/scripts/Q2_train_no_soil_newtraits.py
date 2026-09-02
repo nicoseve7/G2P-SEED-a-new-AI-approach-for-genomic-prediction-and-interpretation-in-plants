@@ -15,9 +15,6 @@
 ###   mapped SNP → gene → ReLU branch
 ###   unmapped SNP → hidden branch
 ###   concatenation → fusion hidden → output
-###
-### To be run from:
-###   dalpaper/nuovitrattinosoil/
 ################################################################################
 
 import os
