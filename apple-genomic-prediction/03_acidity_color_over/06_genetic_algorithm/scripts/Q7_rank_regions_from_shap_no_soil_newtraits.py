@@ -444,7 +444,7 @@ def process_one_trait(trait: str, bim: pd.DataFrame):
     print(f"Q7 - RANK REGIONS FROM NO-SOIL SHAP | TRAIT: {trait}")
     print("=" * 100)
 
-    _, _, out_dir = get_trait_dirs(trait)
+    _, out_dir = get_trait_dirs(trait)
 
     snp_shap = load_snp_shap(trait)
 
