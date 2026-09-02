@@ -1,24 +1,24 @@
 # ==================================================
 # P2_prepare_GB_inputs_traits.R
 #
-# Prepara gli input per il Gradient Boosting
-# per i nuovi tratti:
+# Prepares inputs for Gradient Boosting
+# for the new traits:
 #   - Acidity
 #   - Color_over
 #
-# Usa la CV strategy di Harvest_date come base comune,
-# perché non esiste una CV specifica per questi tratti.
+# Uses the Harvest_date CV strategy as a common basis,
+# because there is no specific CV for these traits.
 #
-# Per ogni trait:
-#   - legge il fenotipo processato finale
-#   - allinea fenotipo e CV
-#   - per ogni split usa SOLO il training set
-#   - stima mixed model:
+# For each trait:
+#   - reads the final processed phenotype
+#   - aligns the phenotype and CV
+#   - for each split, uses ONLY the training set
+#   - estimates the mixed model:
 #       Trait ~ Envir + (1 | Genotype)
-#   - estrae il random effect del genotipo
-#   - salva un file CV*_Split*.csv per il GB
+#   - extracts the random effect of the genotype
+#   - saves a CV*_Split*.csv file for GB
 #
-# Output principali:
+# Main outputs:
 #   Output/Intermediate/GB_feature_selection/all.geno
 #   Output/Intermediate/GB_feature_selection/Acidity/CV*_Split*.csv
 #   Output/Intermediate/GB_feature_selection/Color_over/CV*_Split*.csv
@@ -38,18 +38,17 @@ library(lme4)
 
 TRAITS <- c("Acidity", "Color_over")
 
-PROJECT_DIR <- "."
-OUTPUT_DIR <- file.path(PROJECT_DIR, "Output")
+PHENO_BASE_DIR <- "03_acidity_color_over/02_phenotype_preprocessing/output"
 
-PHENO_BASE_DIR <- file.path(OUTPUT_DIR, "01_pheno_processed")
+CV_FILE <- "data/raw/cv/Harvest_date_CV.csv"
 
-CV_FILE <- "Input/CV1_Strategy/Harvest_date_CV.csv"
+SNP_MATRIX_FILE <- paste0(
+  "01_common_genomic_preprocessing/output/",
+  "SNP_matrix_modeling_var_gt0.RData"
+)
 
-SNP_MATRIX_FILE <- "../Output/SNP_matrix_modeling_var_gt0.RData"
+GB_DIR <- "03_acidity_color_over/03_gradient_boosting/output"
 
-GB_DIR <- file.path(OUTPUT_DIR, "Intermediate", "GB_feature_selection")
-
-dir.create(file.path(OUTPUT_DIR, "Intermediate"), showWarnings = FALSE, recursive = TRUE)
 dir.create(GB_DIR, showWarnings = FALSE, recursive = TRUE)
 
 # =============================================================================
@@ -77,7 +76,7 @@ read_trait_pheno <- function(trait) {
     stop(paste0(
       "File fenotipo processato non trovato:\n",
       pheno_file,
-      "\n\nDevi prima eseguire P1_process_new_traits_pheno.R"
+      "\n\nYou must run P1_process_new_traits_pheno.R before"
     ))
   }
   
@@ -175,8 +174,8 @@ fit_training_mixed_model <- function(training_df, trait, split, trait_dir) {
   ranef_df <- ranef(fit)$Genotype
   ranef_df$Genotype <- rownames(ranef_df)
   
-  # La prima colonna del ranef è il random effect.
-  # La rinominiamo con il nome del trait, così P3 può leggerla facilmente.
+  # The first column is the random effect.
+  # We'll rename it using the trait's name so that P3 can easily read it.
   colnames(ranef_df)[1] <- trait
   
   out_df <- ranef_df %>%
@@ -227,7 +226,7 @@ process_one_trait <- function(trait, cv_repo) {
   cat("Righe presenti solo nel fenotipo finale:", length(only_in_pheno), "\n")
   cat("Righe presenti solo nella CV repo:", length(only_in_cv), "\n\n")
   
-  # Intersezione fenotipo x CV
+  # Intersection phenotype x CV
   cv_aligned <- cv_repo %>%
     semi_join(pheno %>% select(Envir, Genotype), by = c("Envir", "Genotype")) %>%
     arrange(Envir, Genotype)
