@@ -1,23 +1,23 @@
 # ==================================================
 # P5_build_split_specific_geno_files_traits.R
 #
-# Costruisce i file genomici split-specifici
-# per i nuovi tratti:
+# Builds split-specific genomic files
+# for the new traits:
 #   - Acidity
 #   - Color_over
 #
-# Logica:
-#   per ogni trait e split:
-#     - prende top 1000 SNP dal GB
-#     - aggiunge eventuali SNP GWAS del trait
-#     - estrae genotipi dal GDS
-#     - ricodifica 0/1/2 -> 1/0.5/0 come nella pipeline Harvest_date
+# Logic:
+#   For each trait and split:
+#     - Retrieves the top 1,000 SNPs from the GB
+#     - adds any GWAS SNPs for the trait
+#     - extracts genotypes from the GDS
+#     - recodes 0/1/2 to 1/0.5/0 as in the Harvest_date pipeline
 #
 # Input:
 #   Output/Intermediate/GB_feature_selection/feature_selection_results_acidity.csv
 #   Output/Intermediate/GB_feature_selection/feature_selection_results_color_over.csv
-#   Output/Intermediate/SNPs_final_2022.gds oppure Output/SNPs_final_2022.gds
-#   Input/SupTable3_SNPS_GWAS.xls opzionale
+#   Output/Intermediate/SNPs_final_2022.gds or Output/SNPs_final_2022.gds
+#   Input/SupTable3_SNPS_GWAS.xls (optional)
 #
 # Output:
 #   Output/Intermediate/geno_files/Acidity/geno_CV*_Split*.csv
@@ -42,20 +42,30 @@ TRAITS <- c("Acidity", "Color_over")
 
 TOP_N_GB <- 1000
 
-GB_DIR <- "Output/Intermediate/GB_feature_selection"
+GB_DIR <- "03_acidity_color_over/03_gradient_boosting/output"
 
-GDS_CANDIDATES <- c(
-  "Output/Intermediate/SNPs_final_2022.gds",
-  "Output/SNPs_final_2022.gds"
+GDS_FILE <- paste0(
+  "01_common_genomic_preprocessing/output/",
+  "SNPs_final_2022.gds"
 )
 
-GWAS_FILE <- "Input/SupTable3_SNPS_GWAS.xls"
+GWAS_FILE <- "data/raw/external/SupTable3_SNPS_GWAS.xls"
 
-GENO_BASE_DIR <- "Output/Intermediate/geno_files"
-dir.create(GENO_BASE_DIR, showWarnings = FALSE, recursive = TRUE)
+GENO_BASE_DIR <- file.path(
+  "03_acidity_color_over",
+  "03_gradient_boosting",
+  "output",
+  "geno_files"
+)
 
-# Trait renaming usato anche nel vecchio D7.
-# Serve perché nella tabella GWAS i nomi originali possono essere diversi/ordinati.
+dir.create(
+  GENO_BASE_DIR,
+  showWarnings = FALSE,
+  recursive = TRUE
+)
+
+# Trait renaming was also used in the old D7.
+# This is necessary because the original names in the GWAS table may be different or sorted differently.
 RENAMED_TRAITS_ORD <- c(
   "Flowering_begin",
   "Flowering_intensity",
@@ -80,16 +90,16 @@ trait_label <- function(trait) {
 }
 
 find_gds_path <- function() {
-  gds_path <- GDS_CANDIDATES[file.exists(GDS_CANDIDATES)][1]
   
-  if (is.na(gds_path)) {
+  if (!file.exists(GDS_FILE)) {
     stop(paste0(
-      "Nessun file GDS trovato nei path attesi:\n",
-      paste(GDS_CANDIDATES, collapse = "\n")
+      "File GDS non trovato:\n",
+      GDS_FILE,
+      "\n\nEsegui prima run_preprocessing.py."
     ))
   }
   
-  return(gds_path)
+  return(GDS_FILE)
 }
 
 load_gwas_snps <- function() {
@@ -248,7 +258,7 @@ process_one_trait <- function(trait, gds_path, snp_idx_gds, genotypes, gwas_tabl
     cat("Processing split: ", split, "\n", sep = "")
     
     # -------------------------------------------------------------------------
-    # Top GB SNP per questo split
+    # Top GB SNP for this split
     # -------------------------------------------------------------------------
     snps_important_df <- importance_all %>%
       filter(Split == split) %>%
@@ -279,7 +289,7 @@ process_one_trait <- function(trait, gds_path, snp_idx_gds, genotypes, gwas_tabl
     }
     
     # -------------------------------------------------------------------------
-    # Estrazione matrice dal GDS
+    # Extracting a matrix from the GDS
     # -------------------------------------------------------------------------
     gds <- seqOpen(gds.fn = gds_path)
     
@@ -299,7 +309,7 @@ process_one_trait <- function(trait, gds_path, snp_idx_gds, genotypes, gwas_tabl
     rownames(geno_split) <- paste("G", genotypes, sep = "_")
     
     # -------------------------------------------------------------------------
-    # Salvataggio
+    # Save
     # -------------------------------------------------------------------------
     out_file <- file.path(save_dir, paste0("geno_", split, ".csv"))
     write.csv(geno_split, out_file, quote = FALSE, row.names = TRUE)
