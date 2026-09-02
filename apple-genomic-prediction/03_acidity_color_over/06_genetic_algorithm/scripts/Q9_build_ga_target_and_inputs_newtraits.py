@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 ################################################################################
 ### Q9_build_ga_target_and_inputs_newtraits.py
 ###
@@ -7,19 +5,6 @@
 ### using top1000 50kb regions ranked from NO-SOIL SHAP for:
 ###   - Acidity
 ###   - Color_over
-###
-### Input:
-###   Output/04_regioni_annotate/<Trait>/top1000_regions_by_region_score_annotated_50kb_<Trait>.csv
-###   Output/03_regioni_ranked/<Trait>/region_snp_membership_50kb_<Trait>.csv
-###   Output/Intermediate/GB_feature_selection/all.geno
-###   Output/genomic_PCs_20_paper_style.csv
-###   Output/01_pheno_processed/<Trait>/<Trait>_processed_final.csv
-###
-### Output:
-###   Output/05_ga_inputs/<Trait>/
-###
-### Run from:
-###   dalpaper/nuovitrattinosoil/
 ################################################################################
 
 from pathlib import Path
@@ -36,16 +21,36 @@ TRAITS = ["Acidity", "Color_over"]
 TOP_K = 1000
 WINDOW_LABEL = "50kb"
 
-OUT_DIR = Path("Output")
+GA_OUT_DIR = (
+    Path("03_acidity_color_over")
+    / "06_genetic_algorithm"
+    / "output"
+)
 
-ANNOT_BASE_DIR = OUT_DIR / "04_regioni_annotate"
-RANK_BASE_DIR = OUT_DIR / "03_regioni_ranked"
-GA_BASE_DIR = OUT_DIR / "05_ga_inputs"
+ANNOT_BASE_DIR = GA_OUT_DIR / "02_region_annotations"
+RANK_BASE_DIR = GA_OUT_DIR / "01_region_ranking"
+GA_BASE_DIR = GA_OUT_DIR / "03_ga_inputs"
+
 GA_BASE_DIR.mkdir(parents=True, exist_ok=True)
 
-ALL_GENO_FILE = OUT_DIR / "Intermediate" / "GB_feature_selection" / "all.geno"
-PCA_FILE = OUT_DIR / "genomic_PCs_20_paper_style.csv"
-PHENO_BASE_DIR = OUT_DIR / "01_pheno_processed"
+ALL_GENO_FILE = (
+    Path("03_acidity_color_over")
+    / "03_gradient_boosting"
+    / "output"
+    / "all.geno"
+)
+
+PCA_FILE = (
+    Path("01_common_genomic_preprocessing")
+    / "output"
+    / "genomic_PCs_20_paper_style.csv"
+)
+
+PHENO_BASE_DIR = (
+    Path("03_acidity_color_over")
+    / "02_phenotype_preprocessing"
+    / "output"
+)
 
 
 # =============================================================================
@@ -189,7 +194,7 @@ def get_membership_file(trait: str) -> Path:
         if p.exists():
             return p
 
-    # fallback: cerca qualunque file membership 50kb del trait
+    # fallback: search for any 50 KB “membership” file in the trait
     search_patterns = [
         f"*membership*{WINDOW_LABEL}*{trait}*.csv",
         f"*region*snp*{WINDOW_LABEL}*{trait}*.csv",
