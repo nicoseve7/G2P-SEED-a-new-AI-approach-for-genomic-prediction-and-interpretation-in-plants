@@ -101,16 +101,6 @@ apple-genomic-prediction/
 ├── requirements.txt
 └── README.md
 
-
-
-
-
-
-
-
-
-
-
 ## Reproducibility
 The analysis scripts are designed to be executed from the repository root.
 
