@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 ################################################################################
 ### G2D_sensitivity_mutation_crossover_newtraits.py
 ###
@@ -15,15 +13,6 @@
 ###   - Ridge model with PCA as fixed covariates
 ###   - GA selects SNPs only
 ###   - inner tuning of ridge_alpha and lambda_size
-###
-### Inputs produced by Q9:
-###   Output/05_ga_inputs/
-###
-### Main summary expected:
-###   Output/05_ga_inputs/Q9_ga_inputs_summary_all_traits.csv
-###
-### Outputs:
-###   Output/06_ga_runs/G2D_sensitivity_mutation_crossover_newtraits/<TRAIT>/
 ################################################################################
 
 import os
@@ -46,7 +35,6 @@ from deap import base, creator, tools, algorithms
 
 warnings.filterwarnings("ignore")
 
-
 # =============================================================================
 # CONFIG
 # =============================================================================
@@ -56,10 +44,24 @@ TRAITS = ["Acidity", "Color_over"]
 WINDOW_LABEL = "50kb"
 TOP_K = 1000
 
-GA_INPUT_DIR = Path("Output/05_ga_inputs")
-Q9_SUMMARY_FILE = GA_INPUT_DIR / "Q9_ga_inputs_summary_all_traits.csv"
+GA_OUT_DIR = (
+    Path("03_acidity_color_over")
+    / "06_genetic_algorithm"
+    / "output"
+)
 
-BASE_OUT_DIR = Path("Output/06_ga_runs/G2D_sensitivity_mutation_crossover_newtraits")
+GA_INPUT_DIR = GA_OUT_DIR / "03_ga_inputs"
+
+Q9_SUMMARY_FILE = (
+    GA_INPUT_DIR
+    / "Q9_ga_inputs_summary_all_traits.csv"
+)
+
+BASE_OUT_DIR = (
+    GA_OUT_DIR
+    / "04_ga_runs"
+    / "G2D_sensitivity_mutation_crossover_newtraits"
+)
 BASE_OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 DATASET_LABEL = "no_soil_top1000_regions_newtraits"
@@ -70,12 +72,12 @@ SEEDS = [42, 43, 44, 45, 46]
 TEST_SIZE = 0.20
 INNER_CV_FOLDS = 3
 
-# Se False, ogni seed genera anche un train/test split diverso.
-# È la logica che avevamo usato nel G2B/G2D originale.
+# If False, each seed also generates a different train/test split.
+# This is the logic we used in the original G2B/G2D.
 FIX_DATA_SPLITS = False
 SPLIT_SEED = 42
 
-# Tuning interno dentro ogni CXPB/MUTPB/seed
+# Internal tuning within each CXPB/MUTPB/seed
 RIDGE_ALPHA_GRID = [0.1, 1.0, 10.0]
 LAMBDA_SIZE_GRID = [0.02, 0.05, 0.10, 0.20]
 
@@ -1035,30 +1037,6 @@ def make_all_plots(summary, trait: str, fig_dir: Path, table_dir: Path):
         fig_dir=fig_dir,
     )
 
-    # plot_heatmap(
-    #     summary,
-    #     value_col="test_R2_mean",
-    #     title=f"{trait}: mean test R²",
-    #     filename=f"heatmap_test_R2_mean_{trait}.png",
-    #     fig_dir=fig_dir,
-    # )
-
-    # plot_heatmap(
-    #     summary,
-    #     value_col="test_Pearson_r_mean",
-    #     title=f"{trait}: mean test Pearson r",
-    #     filename=f"heatmap_test_Pearson_r_mean_{trait}.png",
-    #     fig_dir=fig_dir,
-    # )
-
-    # plot_heatmap(
-    #     summary,
-    #     value_col="n_selected_snps_mean",
-    #     title=f"{trait}: mean number of selected SNPs",
-    #     filename=f"heatmap_n_selected_snps_mean_{trait}.png",
-    #     fig_dir=fig_dir,
-    # )
-
     plot_contour(
         summary,
         value_col="innerCV_RMSE_mean",
@@ -1066,30 +1044,6 @@ def make_all_plots(summary, trait: str, fig_dir: Path, table_dir: Path):
         filename=f"contour_innerCV_RMSE_mean_{trait}.png",
         fig_dir=fig_dir,
     )
-
-    # plot_contour(
-    #     summary,
-    #     value_col="test_R2_mean",
-    #     title=f"{trait}: mutation/crossover landscape - mean test R²",
-    #     filename=f"contour_test_R2_mean_{trait}.png",
-    #     fig_dir=fig_dir,
-    # )
-
-    # plot_contour(
-    #     summary,
-    #     value_col="test_Pearson_r_mean",
-    #     title=f"{trait}: mutation/crossover landscape - mean test Pearson r",
-    #     filename=f"contour_test_Pearson_r_mean_{trait}.png",
-    #     fig_dir=fig_dir,
-    # )
-
-    # plot_contour(
-    #     summary,
-    #     value_col="n_selected_snps_mean",
-    #     title=f"{trait}: mutation/crossover landscape - mean selected SNPs",
-    #     filename=f"contour_n_selected_snps_mean_{trait}.png",
-    #     fig_dir=fig_dir,
-    # )
 
     summary = summary.copy()
     summary["config"] = (
@@ -1119,10 +1073,6 @@ def write_report(results_df, summary, trait: str, out_dir: Path):
 
     sub_summary = summary[summary["Trait"].astype(str) == trait].copy()
 
-    # best_rmse = sub_summary.sort_values("test_RMSE_mean", ascending=True).iloc[0]
-    # best_r2 = sub_summary.sort_values("test_R2_mean", ascending=False).iloc[0]
-    # best_r = sub_summary.sort_values("test_Pearson_r_mean", ascending=False).iloc[0]
-
     best_innercv = sub_summary.sort_values(
         ["innerCV_RMSE_mean", "innerCV_RMSE_std"],
         ascending=[True, True]
@@ -1150,21 +1100,6 @@ def write_report(results_df, summary, trait: str, out_dir: Path):
         f.write(f"INNER_CV_FOLDS: {INNER_CV_FOLDS}\n")
         f.write(f"RIDGE_ALPHA_GRID: {RIDGE_ALPHA_GRID}\n")
         f.write(f"LAMBDA_SIZE_GRID: {LAMBDA_SIZE_GRID}\n\n")
-
-        # f.write("BEST CONFIGURATION BY TEST RMSE\n")
-        # f.write("-" * 80 + "\n")
-        # f.write(best_rmse.to_string())
-        # f.write("\n\n")
-
-        # f.write("BEST CONFIGURATION BY TEST R2\n")
-        # f.write("-" * 80 + "\n")
-        # f.write(best_r2.to_string())
-        # f.write("\n\n")
-
-        # f.write("BEST CONFIGURATION BY TEST PEARSON R\n")
-        # f.write("-" * 80 + "\n")
-        # f.write(best_r.to_string())
-        # f.write("\n\n")
 
         f.write("SELECTED CONFIGURATION BY INNER-CV RMSE\n")
         f.write("-" * 80 + "\n")
