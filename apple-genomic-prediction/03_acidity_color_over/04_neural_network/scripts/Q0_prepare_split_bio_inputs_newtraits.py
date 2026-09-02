@@ -3,17 +3,17 @@
 ################################################################################
 ### Q0_prepare_split_bio_inputs_newtraits.py
 ###
-### Prepara gli oggetti biologici split-specific per la rete no-soil
-### sui nuovi tratti:
+### Prepares split-specific biological objects for the no-soil network
+### for the new traits:
 ###   - Acidity
 ###   - Color_over
 ###
-### Per ogni trait e per ogni split:
-###   - legge geno_CV*_Split*.csv
-###   - prende la lista degli SNP nello split
-###   - usa il mapping globale SNP -> Gene già costruito
-###   - separa SNP mapped e unmapped
-###   - salva:
+### For each trait and each split:
+###   - reads geno_CV*_Split*.csv
+###   - retrieves the list of SNPs in the split
+###   - uses the pre-built global SNP-to-gene mapping
+###   - separates mapped and unmapped SNPs
+###   - saves:
 ###       mapped_snps.csv
 ###       unmapped_snps.csv
 ###       all_genes.csv
@@ -33,18 +33,32 @@ import pandas as pd
 
 TRAITS = ["Acidity", "Color_over"]
 
-GENO_BASE_DIR = Path("Output/Intermediate/geno_files")
-
-GLOBAL_SNP_GENE_FILE = Path(
-    "../bio_geni_relu_concathidden/Output/biologic_objects/"
-    "snp_gene_mapping/global_snp_gene_edges.csv"
+GENO_BASE_DIR = (
+    Path("03_acidity_color_over")
+    / "03_gradient_boosting"
+    / "output"
+    / "geno_files"
 )
 
-OUT_BIO_BASE_DIR = Path("Output/biologic_objects")
+GLOBAL_SNP_GENE_FILE = (
+    Path("02_harvest_date")
+    / "07_neural_network"
+    / "output"
+    / "biologic_objects"
+    / "snp_gene_mapping"
+    / "global_snp_gene_edges.csv"
+)
+
+OUT_BIO_BASE_DIR = (
+    Path("03_acidity_color_over")
+    / "04_neural_network"
+    / "output"
+    / "biologic_objects"
+)
+
 REPORTS_BASE_DIR = OUT_BIO_BASE_DIR / "reports"
 
 REPORTS_BASE_DIR.mkdir(parents=True, exist_ok=True)
-
 
 # =============================================================================
 # HELPERS
@@ -152,7 +166,6 @@ def process_one_trait(trait: str, snp_gene: pd.DataFrame):
     print(f"Saved summary: {summary_file}")
 
     return summary_df
-
 
 # =============================================================================
 # MAIN
