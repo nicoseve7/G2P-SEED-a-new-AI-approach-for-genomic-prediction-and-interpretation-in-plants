@@ -20,12 +20,6 @@
 ###      + 0.25 * max_region_SHAP_norm
 ###      + 0.20 * mean_n_folds_norm
 ###      + 0.15 * max_top20_count_norm
-###
-### Output:
-###   Output/03_regioni_ranked/<TRAIT>/
-###
-### Run from:
-###   dalpaper/nuovitrattinosoil/
 ################################################################################
 
 from pathlib import Path
@@ -41,18 +35,29 @@ TRAITS = ["Acidity", "Color_over"]
 
 MODEL_NAME = "paper4branches_bio_geni_relu_concathidden_dropout_meteoexp_v3_no_soil"
 
-BASE_MODEL_DIR = Path("Output/02_no_soil_model")
-OUT_BASE_DIR = Path("Output/03_regioni_ranked")
+SHAP_OUT_DIR = (
+    Path("03_acidity_color_over")
+    / "05_shap"
+    / "output"
+)
+
+GA_OUT_DIR = (
+    Path("03_acidity_color_over")
+    / "06_genetic_algorithm"
+    / "output"
+)
+
+OUT_BASE_DIR = GA_OUT_DIR / "01_region_ranking"
 
 # PLINK .bim file:
 # columns are normally:
 #   CHROM, SNP, CM, POS, A1, A2
-BIM_CANDIDATES = [
-    Path("Input/SNPs_final_2022.bim"),
-    Path("../Input/SNPs_final_2022.bim"),
-    Path("Output/SNPs_final_2022.bim"),
-    Path("../Output/SNPs_final_2022.bim"),
-]
+BIM_FILE = (
+    Path("data")
+    / "raw"
+    / "genotype"
+    / "SNPs_final_2022.bim"
+)
 
 WINDOW_SIZES = [50000, 100000]
 TOP_K = 1000
@@ -103,23 +108,26 @@ def ensure_columns(df: pd.DataFrame, needed_cols, file_label="dataframe"):
 
 
 def get_trait_dirs(trait: str):
-    trait_model_dir = BASE_MODEL_DIR / trait
-    agg_dir = trait_model_dir / "Interpretation" / "Aggregated_tables"
+    agg_dir = SHAP_OUT_DIR / trait / "Aggregated_tables"
 
     out_dir = OUT_BASE_DIR / trait
     out_dir.mkdir(parents=True, exist_ok=True)
 
-    return trait_model_dir, agg_dir, out_dir
+    return agg_dir, out_dir
 
 
 def get_shap_file(trait: str):
-    _, agg_dir, _ = get_trait_dirs(trait)
+    agg_dir, _ = get_trait_dirs(trait)
 
-    shap_file = agg_dir / f"SUMMARY_all_snp_SHAP_{MODEL_NAME}_{trait}.csv"
+    shap_file = (
+        agg_dir
+        / f"SUMMARY_all_snp_SHAP_{MODEL_NAME}_{trait}.csv"
+    )
 
     if not shap_file.exists():
         raise FileNotFoundError(
-            f"File SHAP SNP summary non trovato per {trait}:\n{shap_file}\n"
+            f"File SHAP SNP summary non trovato per {trait}:\n"
+            f"{shap_file}\n"
             "Hai eseguito Q5?"
         )
 
@@ -178,7 +186,12 @@ def load_snp_shap(trait: str) -> pd.DataFrame:
 
 
 def load_bim_coordinates() -> pd.DataFrame:
-    bim_file = find_existing_file(BIM_CANDIDATES, "SNPs_final_2022.bim")
+    if not BIM_FILE.exists():
+    raise FileNotFoundError(
+        f"BIM file non trovato:\n{BIM_FILE}"
+    )
+
+    bim_file = BIM_FILE
 
     print(f"[INFO] Uso BIM file: {bim_file}")
 
