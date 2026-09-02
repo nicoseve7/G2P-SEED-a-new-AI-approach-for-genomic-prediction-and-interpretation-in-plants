@@ -100,7 +100,7 @@ apple-genomic-prediction/
 ├── run_new_traits.py
 ├── requirements.txt
 └── README.md
-```markdown
+```
 
 ## Reproducibility
 The analysis scripts are designed to be executed from the repository root.
