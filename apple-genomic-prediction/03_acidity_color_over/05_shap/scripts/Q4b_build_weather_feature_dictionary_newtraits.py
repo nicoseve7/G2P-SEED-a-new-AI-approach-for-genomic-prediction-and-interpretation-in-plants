@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 ################################################################################
 ### Q4b_build_weather_feature_dictionary_newtraits.py
 ###
