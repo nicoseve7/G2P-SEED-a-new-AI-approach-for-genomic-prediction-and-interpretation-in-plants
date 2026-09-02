@@ -36,16 +36,14 @@ library(multtest)
 
 TRAITS <- c("Acidity", "Color_over")
 
-PROJECT_DIR <- "."
-OUTPUT_DIR <- file.path(PROJECT_DIR, "Output")
-PHENO_OUT_DIR <- file.path(OUTPUT_DIR, "01_pheno_processed")
+PHENO_OUT_DIR <- "03_acidity_color_over/02_phenotype_preprocessing/output"
 dir.create(PHENO_OUT_DIR, recursive = TRUE, showWarnings = FALSE)
 
-PHENO_FILE <- file.path("Input", "Pheno_raw.xlsx")
+PHENO_FILE <- "data/raw/phenotype/Pheno_raw.xlsx"
 
-BED_FILE <- file.path("Input", "SNPs_final_2022.bed")
-BIM_FILE <- file.path("Input", "SNPs_final_2022.bim")
-FAM_FILE <- file.path("Input", "SNPs_final_2022.fam")
+BED_FILE <- "data/raw/genotype/SNPs_final_2022.bed"
+BIM_FILE <- "data/raw/genotype/SNPs_final_2022.bim"
+FAM_FILE <- "data/raw/genotype/SNPs_final_2022.fam"
 
 MIN_ROWS_SPATS <- 10
 LOW_H2_THRESHOLD <- 0.1
