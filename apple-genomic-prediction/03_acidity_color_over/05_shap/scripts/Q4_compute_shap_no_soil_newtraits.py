@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 ################################################################################
 ### Q4_compute_shap_no_soil_newtraits.py
 ###
@@ -9,9 +7,6 @@
 ###   - Color_over
 ###
 ### Uses already trained/saved .keras models from Q2.
-###
-### Da eseguire da:
-###   dalpaper/nuovitrattinosoil/
 ################################################################################
 
 import os
