@@ -4,9 +4,6 @@
 ### Q4b_build_weather_feature_dictionary_newtraits.py
 ###
 ### Build dictionary for Weather V3 feature names for new no-soil traits.
-###
-### Da eseguire da:
-###   dalpaper/nuovitrattinosoil/
 ################################################################################
 
 from pathlib import Path
