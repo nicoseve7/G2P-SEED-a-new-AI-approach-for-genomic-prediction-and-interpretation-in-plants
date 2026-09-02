@@ -1,12 +1,12 @@
 # ==================================================
 # P4_analyze_GB_stability_traits.R
 #
-# Analisi stabilità SNP selezionati dal Gradient Boosting
-# per i nuovi tratti:
+# Stability analysis of SNPs selected by Gradient Boosting
+# for the new traits:
 #   - Acidity
 #   - Color_over
 #
-# Input attesi da P3:
+# Expected inputs from P3:
 #   Output/Intermediate/GB_feature_selection/feature_selection_results_acidity.csv
 #   Output/Intermediate/GB_feature_selection/feature_selection_summary_acidity.csv
 #
@@ -34,7 +34,7 @@ library(dplyr)
 
 TRAITS <- c("Acidity", "Color_over")
 
-GB_DIR <- "Output/Intermediate/GB_feature_selection"
+GB_DIR <- "03_acidity_color_over/03_gradient_boosting/output"
 
 THRESHOLDS <- c(1, 2, 5, 10, 15, 20, 25)
 
@@ -110,7 +110,7 @@ process_one_trait <- function(trait) {
   }
   
   # ---------------------------------------------------------------------------
-  # Stabilità SNP tra split
+  # SNP Stability Across Splits
   # ---------------------------------------------------------------------------
   cat("Calcolo stabilità SNP...\n")
   
@@ -129,7 +129,7 @@ process_one_trait <- function(trait) {
     arrange(desc(n_splits_selected), desc(mean_importance), SNP)
   
   # ---------------------------------------------------------------------------
-  # Overlap summary: quanti SNP compaiono in almeno k split
+  # Overlap summary: How many SNPs appear in at least k splits
   # ---------------------------------------------------------------------------
   overlap_summary <- data.frame(
     Trait = trait,
@@ -143,14 +143,14 @@ process_one_trait <- function(trait) {
   overlap_summary$frequency_threshold <- overlap_summary$min_splits / 25
   
   # ---------------------------------------------------------------------------
-  # Top SNP più stabili
+  # Most Stable SNPs
   # ---------------------------------------------------------------------------
   top_stable_snps <- snp_stability %>%
     arrange(desc(n_splits_selected), desc(mean_importance), SNP) %>%
     slice_head(n = 50)
   
   # ---------------------------------------------------------------------------
-  # Numero SNP selezionati per split
+  # Number of SNPs selected per split
   # ---------------------------------------------------------------------------
   split_counts <- fs %>%
     group_by(Trait, Split) %>%
@@ -162,7 +162,7 @@ process_one_trait <- function(trait) {
     arrange(Split)
   
   # ---------------------------------------------------------------------------
-  # Matrice presenza/assenza SNP x split
+  # SNP Presence/Absence Matrix x Split
   # ---------------------------------------------------------------------------
   fs_presence <- fs %>%
     distinct(SNP, Split) %>%
@@ -177,7 +177,7 @@ process_one_trait <- function(trait) {
     arrange(SNP)
   
   # ---------------------------------------------------------------------------
-  # Salvataggi
+  # Save
   # ---------------------------------------------------------------------------
   out_snp_stability <- file.path(
     GB_DIR,
