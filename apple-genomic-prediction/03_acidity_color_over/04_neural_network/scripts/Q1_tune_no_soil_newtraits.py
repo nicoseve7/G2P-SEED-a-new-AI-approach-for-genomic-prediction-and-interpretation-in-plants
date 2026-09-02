@@ -1,18 +1,16 @@
-# -*- coding: utf-8 -*-
-
 ################################################################################
 ### Q1_tune_no_soil_newtraits.py
 ###
-### Tuning della rete V3 SENZA ramo suolo per:
+### Tuning the V3 network WITHOUT the soil branch for:
 ###   - Acidity
 ###   - Color_over
 ###
-### Architettura:
+### Architecture:
 ###   Weather V3 expanded branch
 ###   PCA branch
-###   mapped SNP -> gene -> ReLU branch
-###   unmapped SNP -> hidden branch
-###   concatenation -> fusion hidden -> output
+###   mapped SNP → gene → ReLU branch
+###   unmapped SNP → hidden branch
+###   concatenation → fusion hidden → output
 ###
 ### Input:
 ###   Output/Intermediate/numpy_arrays_newtraits/<Trait>/
@@ -55,26 +53,42 @@ TRAITS = ["Acidity", "Color_over"]
 
 MODEL_NAME = "paper4branches_bio_geni_relu_concathidden_dropout_meteoexp_v3_no_soil"
 
-BASE_OUT_DIR = Path("Output/02_no_soil_model")
+NN_OUT_DIR = (
+    Path("03_acidity_color_over")
+    / "04_neural_network"
+    / "output"
+)
 
-NPY_BASE_DIR = Path("Output/Intermediate/numpy_arrays_newtraits")
-GENO_BASE_DIR = Path("Output/Intermediate/geno_files")
-BIO_BASE_DIR = Path("Output/biologic_objects")
+BASE_OUT_DIR = NN_OUT_DIR / "no_soil_model"
 
-CV_FILE = Path("Input/CV1_Strategy/Harvest_date_CV.csv")
+NPY_BASE_DIR = NN_OUT_DIR / "numpy_arrays_newtraits"
 
-# Prima prova a usare inner splits già costruiti nella pipeline senza_suolo.
-# Se non li trova, lo script crea inner split deterministici dentro il train.
-INNER_SPLITS_CANDIDATES = [
-    Path("Output/datasets/inner_validation_splits_newtraits.csv"),
-    Path("../senza_suolo/Output/datasets/inner_validation_splits_harvest.csv"),
-    Path("../Output/datasets/inner_validation_splits_harvest.csv"),
-]
+GENO_BASE_DIR = (
+    Path("03_acidity_color_over")
+    / "03_gradient_boosting"
+    / "output"
+    / "geno_files"
+)
+
+BIO_BASE_DIR = NN_OUT_DIR / "biologic_objects"
+
+CV_FILE = (
+    Path("data")
+    / "raw"
+    / "cv"
+    / "Harvest_date_CV.csv"
+)
+
+INNER_SPLITS_FILE = (
+    NN_OUT_DIR
+    / "datasets"
+    / "inner_validation_splits_newtraits.csv"
+)
 
 GLOBAL_SEED = 42
 
-# Stessa logica di tuning della rete senza_suolo.
-# Se è troppo lento, puoi ridurre questa griglia.
+# Same tuning logic as the “no-soil” network.
+# If it's too slow, you can reduce this grid.
 GRID = {
     "learning_rate": [0.001, 0.0005],
     "l2_lambda": [0.0, 1e-5, 1e-4],
@@ -262,70 +276,6 @@ def build_fallback_inner_splits(meta: pd.DataFrame, cv: pd.DataFrame, split_cols
 
     return inner
 
-
-# def load_inner_splits_for_trait(trait: str, meta: pd.DataFrame, cv: pd.DataFrame, split_cols):
-#     inner_file = find_existing_inner_splits_file()
-
-#     if inner_file is None:
-#         return build_fallback_inner_splits(meta, cv, split_cols)
-
-#     print(f"[INFO] Uso inner split file: {inner_file}")
-
-#     inner_all = pd.read_csv(inner_file)
-
-#     if "ID_key" not in inner_all.columns:
-#         if {"Envir", "Genotype"}.issubset(inner_all.columns):
-#             inner_all["Envir"] = inner_all["Envir"].astype(str).str.strip()
-#             inner_all["Genotype"] = inner_all["Genotype"].astype(str).str.replace("^G_", "", regex=True).str.strip()
-#             inner_all["ID_key"] = inner_all["Envir"] + "-" + inner_all["Genotype"]
-#         else:
-#             raise ValueError(
-#                 f"Il file inner split non contiene ID_key né Envir/Genotype:\n{inner_file}"
-#             )
-
-#     inner_all["Envir"] = inner_all["Envir"].astype(str).str.strip()
-#     inner_all["Genotype"] = inner_all["Genotype"].astype(str).str.replace("^G_", "", regex=True).str.strip()
-#     inner_all["ID_key"] = inner_all["ID_key"].astype(str).str.strip()
-
-    # needed_cols = ["Envir", "Genotype", "ID_key"]
-
-    # for split_name in split_cols:
-    #     needed_cols.extend([
-    #         f"{split_name}_role",
-    #         f"{split_name}_Testing",
-    #         f"{split_name}_Validation",
-    #         f"{split_name}_Subtrain",
-    #     ])
-
-    # missing_cols = [c for c in needed_cols if c not in inner_all.columns]
-
-    # if len(missing_cols) > 0:
-    #     raise ValueError(
-    #         f"Nel file inner split mancano colonne richieste.\n"
-    #         f"Esempi mancanti: {missing_cols[:20]}\n"
-    #         f"File: {inner_file}"
-    #     )
-
-    # inner_indexed = inner_all[needed_cols].drop_duplicates(subset=["ID_key"]).set_index("ID_key")
-
-    # missing_keys = sorted(set(meta["ID_key"]) - set(inner_indexed.index))
-
-    # if len(missing_keys) > 0:
-    #     raise ValueError(
-    #         f"Per il trait {trait}, alcune righe non hanno inner split.\n"
-    #         f"Esempi ID_key mancanti: {missing_keys[:20]}\n"
-    #         f"File usato: {inner_file}"
-    #     )
-
-    # inner = inner_indexed.loc[meta["ID_key"]].reset_index()
-
-    # if inner.shape[0] != meta.shape[0]:
-    #     raise ValueError(
-    #         f"Inner split alignment mismatch per {trait}: "
-    #         f"meta={meta.shape[0]}, inner={inner.shape[0]}"
-    #     )
-
-    # return inner
 def load_inner_splits_for_trait(trait: str, meta: pd.DataFrame, cv: pd.DataFrame, split_cols):
     """
     Load trait-specific inner validation split file.
@@ -346,12 +296,12 @@ def load_inner_splits_for_trait(trait: str, meta: pd.DataFrame, cv: pd.DataFrame
             CV1_Split1_role
     """
 
-    inner_file = Path("Output") / "datasets" / "inner_validation_splits_newtraits.csv"
+    inner_file = INNER_SPLITS_FILE
 
     if not inner_file.exists():
         raise FileNotFoundError(
             f"Inner validation split file non trovato:\n{inner_file}\n"
-            "Devi prima eseguire Q0b_create_inner_validation_splits_newtraits.py"
+            "You must run Q0b_make_inner_validation_splits_newtraits.py before"
         )
 
     print(f"[INFO] Uso inner split file: {inner_file}")
@@ -411,7 +361,7 @@ def load_inner_splits_for_trait(trait: str, meta: pd.DataFrame, cv: pd.DataFrame
 
     inner_trait = inner_trait[keep_cols].rename(columns=rename_map).copy()
 
-    # Converti le colonne 0/1 a numerico.
+    # Convert the 0/1 columns to numeric values.
     for split in split_cols:
         for suffix in ["Testing", "Validation", "Subtrain"]:
             col = f"{split}_{suffix}"
@@ -420,7 +370,7 @@ def load_inner_splits_for_trait(trait: str, meta: pd.DataFrame, cv: pd.DataFrame
         role_col = f"{split}_role"
         inner_trait[role_col] = inner_trait[role_col].astype(str).str.strip()
 
-    # Controllo che le righe del meta siano presenti nel file inner.
+    # I check to see if the meta lines are present in the inner file.
     meta_keys = set(meta["ID_key"].astype(str))
     inner_keys = set(inner_trait["ID_key"].astype(str))
 
@@ -433,7 +383,7 @@ def load_inner_splits_for_trait(trait: str, meta: pd.DataFrame, cv: pd.DataFrame
             f"Esempi ID_key mancanti: {missing_meta_keys[:20]}"
         )
 
-    # Riordina inner_trait nello stesso ordine di meta.
+    # Reorder `inner_trait` in the same order as `meta`.
     inner_trait = (
         inner_trait
         .set_index("ID_key")
@@ -786,7 +736,6 @@ def build_model(
     )
 
     return model
-
 
 # =============================================================================
 # RUN ONE SPLIT
