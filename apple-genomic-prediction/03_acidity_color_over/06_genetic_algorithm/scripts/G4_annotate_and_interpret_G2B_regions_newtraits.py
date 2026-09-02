@@ -17,15 +17,6 @@
 ###   - region stability plots
 ###   - chromosome distribution plots
 ###   - final interpretation report
-###
-### Input:
-###   Output/06_ga_runs/G2B_multiseed_ga_newtraits/<TRAIT>/
-###   Output/04_regioni_annotate/
-###   Output/05_ga_inputs/
-###
-### Output:
-###   Output/06_ga_runs/G2B_multiseed_ga_newtraits/<TRAIT>/figures_G4/
-###   Output/06_ga_runs/G2B_multiseed_ga_newtraits/<TRAIT>/tables_G4/
 ################################################################################
 
 from pathlib import Path
@@ -50,9 +41,20 @@ TRAITS = ["Acidity", "Color_over"]
 WINDOW_LABEL = "50kb"
 TOP_K = 1000
 
-BASE_RUN_DIR = Path("Output/06_ga_runs/G2B_multiseed_ga_newtraits")
-GA_INPUT_DIR = Path("Output/05_ga_inputs")
-ANNOTATION_DIR = Path("Output/04_regioni_annotate")
+GA_OUT_DIR = (
+    Path("03_acidity_color_over")
+    / "06_genetic_algorithm"
+    / "output"
+)
+
+BASE_RUN_DIR = (
+    GA_OUT_DIR
+    / "04_ga_runs"
+    / "G2B_multiseed_ga_newtraits"
+)
+
+GA_INPUT_DIR = GA_OUT_DIR / "03_ga_inputs"
+ANNOTATION_DIR = GA_OUT_DIR / "02_region_annotations"
 
 DPI = 300
 TOP_N = 25
@@ -205,10 +207,11 @@ def get_trait_paths(trait: str):
         "selected_regions_long_file": run_dir / f"G2B_selected_regions_all_seeds_long_{trait}.csv",
         "selected_snps_long_file": run_dir / f"G2B_selected_snps_all_seeds_long_{trait}.csv",
 
-        "snp_metadata_file": GA_INPUT_DIR / f"snp_metadata_top{TOP_K}_regions_{WINDOW_LABEL}_{trait}.csv",
+        "snp_metadata_file": GA_INPUT_DIR / trait/ f"snp_metadata_top{TOP_K}_regions_{WINDOW_LABEL}_{trait}.csv",
 
-        "annotated_region_file": ANNOTATION_DIR / f"top{TOP_K}_regions_by_region_score_annotated_{WINDOW_LABEL}_{trait}.csv",
-        "full_annotated_region_file": ANNOTATION_DIR / f"ranked_regions_annotated_{WINDOW_LABEL}_{trait}.csv",
+        "annotated_region_file": ANNOTATION_DIR / trait / f"top{TOP_K}_regions_by_region_score_annotated_{WINDOW_LABEL}_{trait}.csv",
+
+        "full_annotated_region_file": ANNOTATION_DIR / trait / f"ranked_regions_annotated_{WINDOW_LABEL}_{trait}.csv",
     }
 
     return paths
