@@ -1,17 +1,9 @@
-# -*- coding: utf-8 -*-
-
 ################################################################################
 ### Q5_aggregate_shap_no_soil_newtraits.py
 ###
 ### Aggregate SHAP results for V3 no-soil model for:
 ###   - Acidity
 ###   - Color_over
-###
-### Input:
-###   Output/02_no_soil_model/<TRAIT>/Interpretation/Splitwise_tables/
-###
-### Output:
-###   Output/02_no_soil_model/<TRAIT>/Interpretation/Aggregated_tables/
 ################################################################################
 
 from pathlib import Path
@@ -27,8 +19,18 @@ TRAITS = ["Acidity", "Color_over"]
 
 MODEL_NAME = "paper4branches_bio_geni_relu_concathidden_dropout_meteoexp_v3_no_soil"
 
-BASE_MODEL_DIR = Path("Output/02_no_soil_model")
-BIO_BASE_DIR = Path("Output/biologic_objects")
+SHAP_OUT_DIR = (
+    Path("03_acidity_color_over")
+    / "05_shap"
+    / "output"
+)
+
+BIO_BASE_DIR = (
+    Path("03_acidity_color_over")
+    / "04_neural_network"
+    / "output"
+    / "biologic_objects"
+)
 
 
 # =============================================================================
@@ -403,11 +405,15 @@ def process_one_trait(trait: str):
     print(f"Q5 - AGGREGATE SHAP NO-SOIL FOR TRAIT: {trait}")
     print("=" * 100)
 
-    trait_model_dir = BASE_MODEL_DIR / trait
-    splitwise_dir = trait_model_dir / "Interpretation" / "Splitwise_tables"
-    dict_dir = trait_model_dir / "Interpretation" / "Feature_dictionaries"
-    agg_dir = trait_model_dir / "Interpretation" / "Aggregated_tables"
-    reports_dir = trait_model_dir / "Interpretation" / "Reports"
+    trait_shap_dir = SHAP_OUT_DIR / trait
+
+    splitwise_dir = trait_shap_dir / "Splitwise_tables"
+    
+    dict_dir = trait_shap_dir / "Feature_dictionaries"
+    
+    agg_dir = trait_shap_dir / "Aggregated_tables"
+    
+    reports_dir = trait_shap_dir / "Reports"
 
     split_inputs_dir = BIO_BASE_DIR / trait / "split_inputs"
     weather_dict_file = dict_dir / "weather_v3_feature_dictionary.csv"
