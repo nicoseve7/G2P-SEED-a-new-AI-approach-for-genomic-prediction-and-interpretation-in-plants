@@ -3,10 +3,6 @@ from pathlib import Path
 
 from pathlib import Path
 
-BASE_DIR = Path(__file__).resolve().parent
-
-ROOT_DIR = BASE_DIR.parent
-
 BIM_FILE = (
     Path("data")
     / "raw"
@@ -57,7 +53,7 @@ bim["CHROM"] = bim["CHROM"].apply(normalize_chr)
 positions = bim[["SNP", "CHROM", "POS"]].copy()
 
 positions.to_csv(
-    OUT_DIR / "global_snp_positions_newtraits.csv",
+    OUT_BIO_BASE_DIR / "global_snp_positions_newtraits.csv",
     index=False
 )
 
@@ -161,7 +157,7 @@ edges = (
 )
 
 edges.to_csv(
-    OUT_DIR / "global_snp_gene_edges_newtraits.csv",
+    OUT_BIO_BASE_DIR / "global_snp_gene_edges_newtraits.csv",
     index=False
 )
 
