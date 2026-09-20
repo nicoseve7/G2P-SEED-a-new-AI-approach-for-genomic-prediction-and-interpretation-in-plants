@@ -46,7 +46,7 @@ GLOBAL_SNP_GENE_FILE = (
     / "output"
     / "biologic_objects"
     / "snp_gene_mapping"
-    / "global_snp_gene_edges.csv"
+    / "global_snp_gene_edges_newtraits.csv"
 )
 
 OUT_BIO_BASE_DIR = (
