@@ -20,7 +20,12 @@ GFF3_FILE = (
     / "gene_models_20170612.gff3"
 )
 
-OUT_DIR = ROOT_DIR / "Output/biologic_objects/snp_gene_mapping_newtraits"
+OUT_BIO_BASE_DIR = (
+    Path("03_acidity_color_over")
+    / "04_neural_network"
+    / "output"
+    / "biologic_objects"
+)
 OUT_DIR.mkdir(parents=True, exist_ok=True)
 
 GENE_FLANK_BP = 3000
