@@ -3,14 +3,12 @@ from pathlib import Path
 
 from pathlib import Path
 
-# Trova la cartella dove risiede fisicamente lo script (codice_Python)
 BASE_DIR = Path(__file__).resolve().parent
 
-# Sale di un livello (nuovitrattinosoil) per raggiungere Input e Output
 ROOT_DIR = BASE_DIR.parent
 
-BIM_FILE = ROOT_DIR / "Input/SNPs_final_2022.bim"
-GFF_FILE = ROOT_DIR / "Input/gene_models_20170612.gff3"
+BIM_FILE = ROOT_DIR /"SNPs_final_2022.bim"
+GFF_FILE = ROOT_DIR / "gene_models_20170612.gff3"
 
 OUT_DIR = ROOT_DIR / "Output/biologic_objects/snp_gene_mapping_newtraits"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
