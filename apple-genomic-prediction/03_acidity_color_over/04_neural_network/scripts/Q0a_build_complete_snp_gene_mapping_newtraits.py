@@ -13,7 +13,12 @@ BIM_FILE = (
     / "genotype"
     / "SNPs_final_2022.bim"
 )
-GFF_FILE = ROOT_DIR / "gene_models_20170612.gff3"
+GFF3_FILE = (
+    Path("data")
+    / "raw"
+    / "annotation"
+    / "gene_models_20170612.gff3"
+)
 
 OUT_DIR = ROOT_DIR / "Output/biologic_objects/snp_gene_mapping_newtraits"
 OUT_DIR.mkdir(parents=True, exist_ok=True)
