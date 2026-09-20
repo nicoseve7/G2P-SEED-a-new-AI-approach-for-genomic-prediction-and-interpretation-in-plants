@@ -103,7 +103,7 @@ apple-genomic-prediction/
 ```
 
 ## Reproducibility
-The analysis scripts are designed to be executed from the repository root.
+The analysis scripts are designed to be executed from the repository root. ADVICE: control the directory of the input files.
 
 ## Common genomic preprocessing
 python run_preprocessing.py
