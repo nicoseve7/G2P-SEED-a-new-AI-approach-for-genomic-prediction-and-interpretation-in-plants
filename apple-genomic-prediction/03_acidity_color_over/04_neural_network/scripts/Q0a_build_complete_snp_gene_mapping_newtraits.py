@@ -26,7 +26,7 @@ OUT_BIO_BASE_DIR = (
     / "output"
     / "biologic_objects"
 )
-OUT_DIR.mkdir(parents=True, exist_ok=True)
+OUT_BIO_BASE_DIR.mkdir(parents=True, exist_ok=True)
 
 GENE_FLANK_BP = 3000
 
